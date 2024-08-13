@@ -1,13 +1,15 @@
 package com.example.shiftlog
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import java.text.SimpleDateFormat
@@ -43,13 +45,15 @@ class SubmitShiftActivity : AppCompatActivity() {
                 startTime = System.currentTimeMillis()
                 startTimeInput.setText(getFormattedTime(startTime))
                 isShiftStarted = true
-                Toast.makeText(this, "Shift started. Press again to stop.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Shift started. Press again to stop.", Toast.LENGTH_SHORT)
+                    .show()
             } else {
                 // End the shift and record the end time
                 endTime = System.currentTimeMillis()
                 endTimeInput.setText(getFormattedTime(endTime))
                 isShiftStarted = false  // Reset the flag for the next shift
-                Toast.makeText(this, "Shift ended. Now, press Submit to save.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Shift ended. Now, press Submit to save.", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
 
@@ -60,7 +64,8 @@ class SubmitShiftActivity : AppCompatActivity() {
 
             // Validate inputs
             if (startTimeText.isEmpty() || endTimeText.isEmpty()) {
-                Toast.makeText(this, "Please enter both start and end times.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Please enter both start and end times.", Toast.LENGTH_SHORT)
+                    .show()
                 return@setOnClickListener
             }
 
@@ -71,6 +76,10 @@ class SubmitShiftActivity : AppCompatActivity() {
             // Calculate duration and salary
             val durationHours = calculateDuration(startTime, endTime)
             val salary = calculateSalary(durationHours)
+
+            // Debugging logs
+            Log.d("SubmitShiftActivity", "Start Time: $startTimeText, End Time: $endTimeText")
+            Log.d("SubmitShiftActivity", "Duration: $durationHours hours, Salary: $$salary")
 
             // Save everything to Firebase
             saveShiftData(startTimeText, endTimeText, durationHours, salary)
@@ -97,45 +106,91 @@ class SubmitShiftActivity : AppCompatActivity() {
         return durationHours * hourlyRate
     }
 
-    private fun saveShiftData(startTime: String, endTime: String, duration: Double, salary: Double) {
+    // In SubmitShiftActivity
+    private fun saveShiftData(
+        startTime: String,
+        endTime: String,
+        duration: Double,
+        salary: Double
+    ) {
         val user = auth.currentUser?.uid
         val db = Firebase.firestore
 
         if (user != null) {
-            // Reference to Firebase Realtime Database
-            val database = FirebaseDatabase.getInstance()
-            val shiftsRef = database.getReference("shifts").child(user)
+            // Get the current date
+            val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
-            // Create a map for the shift data
-            val shiftData = hashMapOf(
-                "startTime" to startTime,
-                "endTime" to endTime,
-                "durationHours" to duration.toString(),
-                "salary" to salary.toString()
-            )
+            // Reference to the user's document and specific date
+            val userDocRef =
+                db.collection("users").document(user).collection("shifts").document(currentDate)
 
-            // Save the shift data in Firestore
-            db.collection("users").document(user).collection("shifts").add(shiftData)
-                .addOnSuccessListener {
-                    Toast.makeText(this, "Shift data saved successfully.", Toast.LENGTH_SHORT).show()
-                    // Save the same data to Realtime Database as well
-                    shiftsRef.push().setValue(shiftData).addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(this, "Shift data saved successfully.", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(
-                                this,
-                                "Failed to save shift data: ${task.exception?.message}",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                    }
+            // Show loading indicator
+            showLoadingIndicator(true)
+
+            userDocRef.get().addOnSuccessListener { document ->
+                if (document.exists()) {
+                    // Update existing document for the current date
+                    updateTimes(document, startTime, endTime, duration, salary, userDocRef)
+                } else {
+                    // Initialize new document for the current date
+                    initDocument(userDocRef, startTime, endTime, duration, salary)
                 }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Failed to save shift data: ${it.message}", Toast.LENGTH_LONG).show()
-                }
+            }.addOnFailureListener {
+                Toast.makeText(this, "Error getting document: ${it.message}", Toast.LENGTH_LONG)
+                    .show()
+                showLoadingIndicator(false)
+            }
         } else {
             Toast.makeText(this, "User is not authenticated.", Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun initDocument(userDocRef: DocumentReference, startTime: String, endTime: String, duration: Double, salary: Double) {
+        val shiftData = hashMapOf(
+            "startTime" to startTime,
+            "endTime" to endTime,
+            "duration" to duration,
+            "salary" to salary
+        )
+        val shiftArray = arrayListOf(shiftData)
+        userDocRef.set(mapOf("shiftArray" to shiftArray))
+            .addOnSuccessListener {
+                Toast.makeText(this, "Shift data initialized successfully.", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Error initializing shift data: ${it.message}", Toast.LENGTH_LONG).show()
+            }
+    }
+
+    private fun updateTimes(document: DocumentSnapshot, startTime: String, endTime: String, duration: Double, salary: Double, userDocRef: DocumentReference) {
+        val newShiftData = hashMapOf(
+            "startTime" to startTime,
+            "endTime" to endTime,
+            "duration" to duration,
+            "salary" to salary
+        )
+        // Convert existing data to a list of maps
+        val shiftArray = (document.get("shiftArray") as? List<*>)?.mapNotNull { it as? Map<String, Any> } ?: emptyList()
+        val shiftArrayList = ArrayList(shiftArray)
+        shiftArrayList.add(newShiftData)
+
+        userDocRef.update("shiftArray", shiftArrayList)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Shift data updated successfully.", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Error updating shift data: ${it.message}", Toast.LENGTH_LONG).show()
+            }
+    }
+
+
+    // Function to show/hide a loading indicator
+    private fun showLoadingIndicator(show: Boolean) {
+        // Show or hide a ProgressBar or some UI element to indicate loading
+    }
+
+    // Function to fetch data again and update UI (e.g., refresh calendar view)
+    private fun fetchDataAndUpdateUI() {
+        // Implementation to fetch data and update the calendar or other UI components
     }
 }
