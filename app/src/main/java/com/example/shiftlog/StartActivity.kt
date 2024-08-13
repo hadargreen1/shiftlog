@@ -31,28 +31,48 @@ class StartActivity : AppCompatActivity() {
         forgotPasswordLink = findViewById(R.id.forgotPasswordLink)
 
         loginButton.setOnClickListener {
-            val email = emailInput.text.toString()
-            val password = passwordInput.text.toString()
-            loginUser(email, password)
+            val email = emailInput.text.toString().trim()
+            val password = passwordInput.text.toString().trim()
+
+            if (email.isEmpty()) {
+                emailInput.error = "Email is required"
+                emailInput.requestFocus()
+                return@setOnClickListener
+            }
+
+            if (password.isEmpty()) {
+                passwordInput.error = "Password is required"
+                passwordInput.requestFocus()
+                return@setOnClickListener
+            }
+
+            if (!isFinishing) {
+                loginUser(email, password)
+            }
         }
 
         registerButton.setOnClickListener {
-            startActivity(Intent(this, RegisterActivity::class.java))
+            if (!isFinishing) {
+                startActivity(Intent(this, RegisterActivity::class.java))
+            }
         }
 
         forgotPasswordLink.setOnClickListener {
-            val email = emailInput.text.toString()
+            val email = emailInput.text.toString().trim()
             if (email.isNotEmpty()) {
-                auth.sendPasswordResetEmail(email)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(this, "Reset link sent to your email.", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(this, "Unable to send reset mail.", Toast.LENGTH_SHORT).show()
+                if (!isFinishing) {
+                    auth.sendPasswordResetEmail(email)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                Toast.makeText(this, "Reset link sent to your email.", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(this, "Unable to send reset mail.", Toast.LENGTH_SHORT).show()
+                            }
                         }
-                    }
+                }
             } else {
-                Toast.makeText(this, "Please enter your email.", Toast.LENGTH_SHORT).show()
+                emailInput.error = "Please enter your email"
+                emailInput.requestFocus()
             }
         }
     }
@@ -61,12 +81,12 @@ class StartActivity : AppCompatActivity() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    // Login success, navigate to the main page
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
+                    if (!isFinishing) {
+                        startActivity(Intent(this, MainActivity::class.java))
+                        finish()
+                    }
                 } else {
-                    // If login fails, display a message to the user
-                    Toast.makeText(this, "Authentication failed.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Authentication failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                 }
             }
     }
@@ -75,8 +95,7 @@ class StartActivity : AppCompatActivity() {
         super.onStart()
         auth.addAuthStateListener {
             val user = it.currentUser
-            if (user != null) {
-                // User is signed in
+            if (user != null && !isFinishing) {
                 startActivity(Intent(this, MainActivity::class.java))
                 finish()
             }

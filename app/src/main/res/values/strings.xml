@@ -6,4 +6,9 @@
     <string name="login">Login</string>
     <string name="forgot_password">Forgot password</string>
     <string name="register">Register</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="Submit_shift">Submit Shift</string>
+
+
 </resources>

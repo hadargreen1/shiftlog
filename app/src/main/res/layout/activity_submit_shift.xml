@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center">
+
+    <!-- FloatingActionButton to start shift timer -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/startShiftButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/ic_timer"
+        android:contentDescription="Start Shift" />
+
+    <!-- Input fields for start time and end time with increased height and padding -->
+    <EditText
+        android:id="@+id/startTimeInput"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="Start Time (HH:mm)"
+        android:padding="12dp"
+        android:minHeight="48dp" />
+
+    <EditText
+        android:id="@+id/endTimeInput"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="End Time (HH:mm)"
+        android:layout_marginTop="8dp"
+        android:padding="12dp"
+        android:minHeight="48dp" />
+
+    <!-- Button to submit the shift -->
+    <Button
+        android:id="@+id/submitShiftButton"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:text="Submit Shift"
+        android:minHeight="48dp" />
+</LinearLayout>
