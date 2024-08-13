@@ -1,44 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:gravity="center">
+    android:background="@android:color/white">
 
-    <!-- FloatingActionButton to start shift timer -->
+    <!-- CardView for Start Time Input -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:padding="8dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
+
+        <EditText
+            android:id="@+id/startTimeInput"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:autofillHints=""
+            android:minHeight="48dp"
+            android:hint="@string/start_time"
+            android:inputType="time"
+            android:padding="12dp"
+            android:textSize="16sp"
+            android:background="@android:color/transparent" />
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- CardView for End Time Input -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:padding="8dp"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="4dp">
+
+        <EditText
+            android:id="@+id/endTimeInput"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:autofillHints=""
+            android:minHeight="48dp"
+            android:hint="@string/end_time"
+            android:inputType="time"
+            android:padding="12dp"
+            android:textSize="16sp"
+            android:background="@android:color/transparent" />
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- FloatingActionButton for Starting Shift -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/startShiftButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="100dp"
         android:layout_marginBottom="16dp"
+        android:scaleX="2"
+        android:scaleY="2"
         android:src="@drawable/ic_timer"
-        android:contentDescription="Start Shift" />
+        android:contentDescription="@string/start_shift"
+        app:fabSize="normal"
+        app:backgroundTint="@color/colorPrimary"
+        android:backgroundTintMode="src_in"/>
 
-    <!-- Input fields for start time and end time with increased height and padding -->
-    <EditText
-        android:id="@+id/startTimeInput"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="Start Time (HH:mm)"
-        android:padding="12dp"
-        android:minHeight="48dp" />
-
-    <EditText
-        android:id="@+id/endTimeInput"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="End Time (HH:mm)"
-        android:layout_marginTop="8dp"
-        android:padding="12dp"
-        android:minHeight="48dp" />
-
-    <!-- Button to submit the shift -->
+    <!-- Button to Submit Shift -->
     <Button
         android:id="@+id/submitShiftButton"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginTop="16dp"
-        android:text="Submit Shift"
-        android:minHeight="48dp" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@android:color/white"
+        android:text="@string/submit_shift"
+        android:textAllCaps="false"
+        android:padding="12dp"
+        android:textSize="16sp"
+        android:elevation="2dp"
+        android:layout_gravity="center"
+        android:background="@drawable/rounded_button" />
+
 </LinearLayout>
