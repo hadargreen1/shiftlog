@@ -1,6 +1,7 @@
 package com.example.shiftlog
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,18 +9,18 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView
 import com.prolificinteractive.materialcalendarview.CalendarDay
 import java.text.SimpleDateFormat
 import java.util.*
 import android.widget.TextView
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.GenericTypeIndicator
+import kotlin.text.*
 
 class CalendarFragment : Fragment() {
 
     private lateinit var calendarView: MaterialCalendarView
-    private val db = Firebase.firestore
     private val auth = FirebaseAuth.getInstance()
 
     override fun onCreateView(
@@ -30,9 +31,9 @@ class CalendarFragment : Fragment() {
         calendarView = view.findViewById(R.id.calendarView)
 
         calendarView.setOnDateChangedListener { _, date, _ ->
-            // Convert CalendarDay to Date
             val selectedDate = convertCalendarDayToDate(date)
-            val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selectedDate)
+            val formattedDate =
+                SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selectedDate)
             loadShiftDataForDate(formattedDate)
         }
 
@@ -48,57 +49,88 @@ class CalendarFragment : Fragment() {
     private fun loadShiftDataForDate(date: String) {
         val user = auth.currentUser?.uid
         if (user != null) {
-            val dateDocRef = db.collection("users").document(user).collection("shifts").document(date)
+            val db =
+                FirebaseDatabase.getInstance("https://shiftlog-6a430-default-rtdb.europe-west1.firebasedatabase.app").reference
+            val dateRef = db.child("users").child(user).child("shifts").child(date)
 
-            dateDocRef.get().addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val shiftArray = document.get("shiftArray") as? List<*>
-                    if (shiftArray != null) {
-                        displayShiftData(shiftArray)
+            dateRef.get().addOnSuccessListener { dataSnapshot ->
+                if (dataSnapshot.exists()) {
+                    val shiftList = mutableListOf<Map<String, Any>>()
+
+                    for (shiftSnapshot in dataSnapshot.children) {
+                        val shiftData = shiftSnapshot.getValue(object :
+                            GenericTypeIndicator<Map<String, Any>>() {})
+                        if (shiftData != null) {
+                            shiftList.add(shiftData)
+                        }
+                    }
+
+                    if (shiftList.isNotEmpty()) {
+                        displayShiftData(shiftList, date)
                     } else {
-                        Toast.makeText(requireContext(), "No shifts recorded for this date.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            "No shifts recorded for this date.",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 } else {
-                    Toast.makeText(requireContext(), "No shifts recorded for this date.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "No shifts recorded for this date.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }.addOnFailureListener {
-                Toast.makeText(requireContext(), "Error loading shift data: ${it.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Error loading shift data: ${it.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         } else {
             Toast.makeText(requireContext(), "User not authenticated.", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun displayShiftData(shiftArray: List<*>) {
-        // Inflate the custom layout
+    private fun displayShiftData(shiftArray: List<Map<String, Any>>, date: String) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_shift_details, null)
+        val tvShiftDetails = dialogView.findViewById<TextView>(R.id.tvShiftDetails)
+        val detailsBuilder = StringBuilder()
 
-        // Find the TextViews in the custom layout
-        val tvShiftStartTime = dialogView.findViewById<TextView>(R.id.tvShiftStartTime)
-        val tvShiftEndTime = dialogView.findViewById<TextView>(R.id.tvShiftEndTime)
-        val tvShiftDuration = dialogView.findViewById<TextView>(R.id.tvShiftDuration)
-        val tvShiftSalary = dialogView.findViewById<TextView>(R.id.tvShiftSalary)
+        val locale = Locale.getDefault()  // Or specify a particular locale if needed
 
-        // Assuming you want to show only the first shift for simplicity
-        val firstShift = shiftArray.firstOrNull() as? Map<*, *>
-        firstShift?.let {
-            val startTime = it["startTime"] as? String ?: "N/A"
-            val endTime = it["endTime"] as? String ?: "N/A"
-            val duration = it["duration"] as? Double ?: 0.0
-            val salary = it["salary"] as? Double ?: 0.0
+        shiftArray.forEachIndexed { _, shift ->
+            val startTime = shift["startTime"] as? String ?: "N/A"
+            val endTime = shift["endTime"] as? String ?: "N/A"
 
-            // Populate the TextViews with the shift data
-            tvShiftStartTime.text = "Shift Start Time: $startTime"
-            tvShiftEndTime.text = "Shift End Time: $endTime"
-            tvShiftDuration.text = "Total Hours Worked: ${"%.2f".format(duration)} hrs"
-            tvShiftSalary.text = "Salary Earned: $${"%.2f".format(salary)}"
+            // Handle possible different types for duration and salary
+            val duration = when (val d = shift["duration"]) {
+                is Number -> d.toDouble()
+                else -> 0.0
+            }
+            val salary = when (val s = shift["salary"]) {
+                is Number -> s.toDouble()
+                else -> 0.0
+            }
+
+            Log.d("DisplayShiftData", "Shift - Start Time: $startTime, End Time: $endTime, Duration: $duration, Salary: $salary")
+
+            detailsBuilder.append("Shift Date: $date\n")
+            detailsBuilder.append("Start Time: $startTime\n")
+            detailsBuilder.append("End Time: $endTime\n")
+            detailsBuilder.append("Duration: ${String.format(locale, "%.2f", duration)} hrs\n")
+            detailsBuilder.append("Salary: $${String.format(locale, "%.2f", salary)}\n\n")
         }
 
-        // Create and show the dialog
+        tvShiftDetails.text = detailsBuilder.toString()
+
         AlertDialog.Builder(requireContext())
             .setView(dialogView)
             .setTitle("Shift Details")
             .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
             .show()
     }
+
+
 }

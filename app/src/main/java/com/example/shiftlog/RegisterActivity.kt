@@ -65,36 +65,34 @@ class RegisterActivity : AppCompatActivity() {
             }
     }
 
-    // Method to save user data to Firebase Realtime Database
+    // Method to save user data to Firebase  Database
     private fun saveUserData(email: String, dob: String, password: String) {
-        val user = auth.currentUser!!.uid
+        val user = auth.currentUser?.uid
         val db = Firebase.firestore
 
-        // Reference to Firebase Realtime Database
-        val database = FirebaseDatabase.getInstance()
-        val usersRef = database.getReference("users")
+        if (user != null) {
+            // Create a map for the user data
+            val userData = HashMap<String, String>()
+            userData["email"] = email
+            userData["dob"] = dob
+            userData["password"] = password
 
-        // Create a map for the user data
-        val userData = HashMap<String, String>()
-        userData["email"] = email
-        userData["dob"] = dob
-        userData["password"] = password
-
-        db.collection("user").document(user).set(userData).addOnSuccessListener {
-            passwordInput.text?.clear()
-            dobInput.text?.clear()
-            emailInput.text?.clear()
-            Toast.makeText(this,"Success",Toast.LENGTH_SHORT).show()
-        }
-        // Save user data under the user's unique ID
-        usersRef.child(user).setValue(userData).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                // Data saved successfully
-                Toast.makeText(this, "User data saved.", Toast.LENGTH_SHORT).show()
-            } else {
-                // Handle any errors in saving user data
-                Toast.makeText(this, "Failed to save user data: ${task.exception?.message}", Toast.LENGTH_LONG).show()
-            }
+            // Save user data in Firestore under the user's unique ID
+            db.collection("users").document(user).set(userData)
+                .addOnSuccessListener {
+                    // Clear input fields after successful save
+                    passwordInput.text?.clear()
+                    dobInput.text?.clear()
+                    emailInput.text?.clear()
+                    Toast.makeText(this, "User data saved successfully.", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { e ->
+                    // Handle any errors in saving user data
+                    Toast.makeText(this, "Failed to save user data: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+        } else {
+            Toast.makeText(this, "User is not authenticated.", Toast.LENGTH_LONG).show()
         }
     }
+
 }

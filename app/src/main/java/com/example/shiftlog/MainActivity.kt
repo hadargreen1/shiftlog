@@ -13,8 +13,10 @@ import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -70,57 +72,42 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private fun fetchDaysWorkedAndSalary() {
         val user = auth.currentUser?.uid
-        val db = Firebase.firestore
+        val db = FirebaseDatabase.getInstance("https://shiftlog-6a430-default-rtdb.europe-west1.firebasedatabase.app").reference
 
         if (user != null) {
-            db.collection("users").document(user).collection("shifts")
-                .get()
-                .addOnSuccessListener { documents ->
+            val userRef = db.child("users").child(user).child("shifts")
+            userRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
                     var totalDaysWorked = 0
                     var totalHoursWorked = 0.0
                     var totalSalary = 0.0
 
-                    if (!documents.isEmpty) {
-                        for (document in documents) {
-                            val documentId = document.id
+                    val currentMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date())
 
-                            // Only consider documents within the current month
-                            if (documentId.startsWith("2024-08")) {
-                                totalDaysWorked += 1
-                                val shiftArray = document.get("shiftArray") as? List<*>
-                                shiftArray?.forEach { shift ->
-                                    val shiftMap = shift as? Map<*, *>
-                                    shiftMap?.let {
-                                        val duration = it["duration"] as? Double ?: 0.0
-                                        totalHoursWorked += duration
-
-                                        val salary = it["salary"] as? Double ?: 0.0
-                                        totalSalary += salary
-                                    }
-                                }
+                    for (dateSnapshot in dataSnapshot.children) {
+                        if (dateSnapshot.key?.startsWith(currentMonth) == true) {
+                            totalDaysWorked += 1
+                            for (shiftSnapshot in dateSnapshot.children) {
+                                val duration = shiftSnapshot.child("duration").getValue(Double::class.java) ?: 0.0
+                                val salary = shiftSnapshot.child("salary").getValue(Double::class.java) ?: 0.0
+                                totalHoursWorked += duration
+                                totalSalary += salary
                             }
                         }
-
-                        Log.d("MainActivity", "Total Days Worked: $totalDaysWorked, Total Hours Worked: $totalHoursWorked, Total Salary: $totalSalary")
-
-                        // Update the UI with the fetched data
-                        daysWorkedTextView.text = "Days Worked: $totalDaysWorked"
-                        salaryGainedTextView.text = "Salary Gained: $${String.format("%.2f", totalSalary)}"
-                    } else {
-                        Log.d("MainActivity", "No documents found.")
-                        daysWorkedTextView.text = "Days Worked: 0"
-                        salaryGainedTextView.text = "Salary Gained: $0.00"
                     }
+
+                    daysWorkedTextView.text = "Days Worked: $totalDaysWorked"
+                    salaryGainedTextView.text = "Salary Gained: $${String.format("%.2f", totalSalary)}"
                 }
-                .addOnFailureListener { e ->
-                    Log.e("MainActivity", "Error fetching data: ${e.message}")
-                    Snackbar.make(drawerLayout, "Error fetching data: ${e.message}", Snackbar.LENGTH_LONG).show()
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Snackbar.make(drawerLayout, "Error fetching data: ${databaseError.message}", Snackbar.LENGTH_LONG).show()
                 }
+            })
         } else {
-            Log.e("MainActivity", "User is not authenticated")
+            Snackbar.make(drawerLayout, "User is not authenticated.", Snackbar.LENGTH_LONG).show()
         }
     }
-
 
     override fun onBackPressed() {
         if (drawerLayout.isDrawerOpen(androidx.core.view.GravityCompat.START)) {
@@ -138,7 +125,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     .commit()
             }
             R.id.nav_submit_shift -> {
-                // Navigate to com.example.shiftlog.com.example.shiftlog.com.example.shiftlog.com.example.shiftlog.com.example.shiftlog.SubmitShiftActivity
                 val intent = Intent(this, SubmitShiftActivity::class.java)
                 startActivity(intent)
             }
@@ -149,14 +135,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 Snackbar.make(findViewById(R.id.fragment_container), "Account Info clicked", Snackbar.LENGTH_LONG).show()
             }
             R.id.nav_logout -> {
-                // Log out the user
                 auth.signOut()
-
-                // Navigate to the sign-in page
                 val intent = Intent(this, StartActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startActivity(intent)
-                finish() // Finish the current activity
+                finish()
             }
         }
         drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)

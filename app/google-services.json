@@ -2,7 +2,8 @@
   "project_info": {
     "project_number": "744547248050",
     "project_id": "shiftlog-6a430",
-    "storage_bucket": "shiftlog-6a430.appspot.com"
+    "storage_bucket": "shiftlog-6a430.appspot.com",
+    "firebase_url": "https://shiftlog-6a430-default-rtdb.europe-west1.firebasedatabase.app"
   },
   "client": [
     {
