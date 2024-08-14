@@ -1,8 +1,8 @@
 package com.example.shiftlog
 
-
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
@@ -13,12 +13,17 @@ import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
-
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var auth: FirebaseAuth
+    private lateinit var daysWorkedTextView: TextView
+    private lateinit var salaryGainedTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +53,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
+        daysWorkedTextView = findViewById(R.id.daysWorkedTextView)
+        salaryGainedTextView = findViewById(R.id.salaryGainedTextView)
+
+        // Fetch and update the data
+        fetchDaysWorkedAndSalary()
+
         // Load the default fragment when the activity starts
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
@@ -56,6 +67,60 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             navView.setCheckedItem(R.id.nav_home)
         }
     }
+
+    private fun fetchDaysWorkedAndSalary() {
+        val user = auth.currentUser?.uid
+        val db = Firebase.firestore
+
+        if (user != null) {
+            db.collection("users").document(user).collection("shifts")
+                .get()
+                .addOnSuccessListener { documents ->
+                    var totalDaysWorked = 0
+                    var totalHoursWorked = 0.0
+                    var totalSalary = 0.0
+
+                    if (!documents.isEmpty) {
+                        for (document in documents) {
+                            val documentId = document.id
+
+                            // Only consider documents within the current month
+                            if (documentId.startsWith("2024-08")) {
+                                totalDaysWorked += 1
+                                val shiftArray = document.get("shiftArray") as? List<*>
+                                shiftArray?.forEach { shift ->
+                                    val shiftMap = shift as? Map<*, *>
+                                    shiftMap?.let {
+                                        val duration = it["duration"] as? Double ?: 0.0
+                                        totalHoursWorked += duration
+
+                                        val salary = it["salary"] as? Double ?: 0.0
+                                        totalSalary += salary
+                                    }
+                                }
+                            }
+                        }
+
+                        Log.d("MainActivity", "Total Days Worked: $totalDaysWorked, Total Hours Worked: $totalHoursWorked, Total Salary: $totalSalary")
+
+                        // Update the UI with the fetched data
+                        daysWorkedTextView.text = "Days Worked: $totalDaysWorked"
+                        salaryGainedTextView.text = "Salary Gained: $${String.format("%.2f", totalSalary)}"
+                    } else {
+                        Log.d("MainActivity", "No documents found.")
+                        daysWorkedTextView.text = "Days Worked: 0"
+                        salaryGainedTextView.text = "Salary Gained: $0.00"
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("MainActivity", "Error fetching data: ${e.message}")
+                    Snackbar.make(drawerLayout, "Error fetching data: ${e.message}", Snackbar.LENGTH_LONG).show()
+                }
+        } else {
+            Log.e("MainActivity", "User is not authenticated")
+        }
+    }
+
 
     override fun onBackPressed() {
         if (drawerLayout.isDrawerOpen(androidx.core.view.GravityCompat.START)) {
@@ -73,7 +138,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     .commit()
             }
             R.id.nav_submit_shift -> {
-                // Navigate to SubmitShiftActivity
+                // Navigate to com.example.shiftlog.com.example.shiftlog.com.example.shiftlog.com.example.shiftlog.com.example.shiftlog.SubmitShiftActivity
                 val intent = Intent(this, SubmitShiftActivity::class.java)
                 startActivity(intent)
             }

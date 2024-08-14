@@ -1,9 +1,11 @@
 package com.example.shiftlog
 
 import android.os.Bundle
-import android.util.Log
+import android.os.Handler
+import android.os.Looper
 import android.widget.Button
 import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -18,13 +20,24 @@ import java.util.*
 class SubmitShiftActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var selectedDateTextView: TextView
+    private lateinit var previousDayButton: Button
+    private lateinit var nextDayButton: Button
+
     private lateinit var startShiftButton: FloatingActionButton
     private lateinit var startTimeInput: EditText
     private lateinit var endTimeInput: EditText
     private lateinit var submitShiftButton: Button
-    private var startTime: Long = 0  // Store the start time as a timestamp
-    private var endTime: Long = 0  // Store the end time as a timestamp
-    private var isShiftStarted: Boolean = false  // Flag to track shift state
+    private lateinit var timerTextView: TextView
+
+    private var currentDate: Calendar = Calendar.getInstance()
+    private var isShiftStarted: Boolean = false  // Track if the shift has started
+    private var isShiftStopped: Boolean = false  // Track if the shift has stopped
+    private var isTimerRunning: Boolean = false  // Track if the timer is running
+    private var startTime: Long = 0
+    private var totalDuration: Long = 0
+    private var handler = Handler(Looper.getMainLooper())
+    private var secondsElapsed: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,56 +47,85 @@ class SubmitShiftActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
 
         // Link UI elements
+        selectedDateTextView = findViewById(R.id.selectedDateTextView)
+        previousDayButton = findViewById(R.id.previousDayButton)
+        nextDayButton = findViewById(R.id.nextDayButton)
         startShiftButton = findViewById(R.id.startShiftButton)
         startTimeInput = findViewById(R.id.startTimeInput)
         endTimeInput = findViewById(R.id.endTimeInput)
         submitShiftButton = findViewById(R.id.submitShiftButton)
+        timerTextView = findViewById(R.id.timerTextView)
 
+        // Set initial date to today
+        updateDisplayedDate()
+
+        // Handle previous day button click
+        previousDayButton.setOnClickListener {
+            currentDate.add(Calendar.DAY_OF_MONTH, -1)
+            updateDisplayedDate()
+        }
+
+        // Handle next day button click
+        nextDayButton.setOnClickListener {
+            currentDate.add(Calendar.DAY_OF_MONTH, 1)
+            updateDisplayedDate()
+        }
+
+        // Handle start and stop shift
         startShiftButton.setOnClickListener {
             if (!isShiftStarted) {
-                // Start the shift and record the start time
+                // Start the shift
                 startTime = System.currentTimeMillis()
                 startTimeInput.setText(getFormattedTime(startTime))
                 isShiftStarted = true
-                Toast.makeText(this, "Shift started. Press again to stop.", Toast.LENGTH_SHORT)
-                    .show()
-            } else {
-                // End the shift and record the end time
-                endTime = System.currentTimeMillis()
+                isTimerRunning = true
+                startTimer()
+                Toast.makeText(this, "Shift started. Press again to stop.", Toast.LENGTH_SHORT).show()
+            } else if (!isShiftStopped) {
+                // Stop the shift
+                val endTime = System.currentTimeMillis()
                 endTimeInput.setText(getFormattedTime(endTime))
-                isShiftStarted = false  // Reset the flag for the next shift
-                Toast.makeText(this, "Shift ended. Now, press Submit to save.", Toast.LENGTH_SHORT)
-                    .show()
+                totalDuration += endTime - startTime
+                isShiftStopped = true
+                isTimerRunning = false
+                stopTimer()
+                Toast.makeText(this, "Shift ended. Please submit the shift.", Toast.LENGTH_SHORT).show()
             }
         }
 
+        // Handle shift submission
         submitShiftButton.setOnClickListener {
-            // Get the input values
-            val startTimeText = startTimeInput.text.toString()
-            val endTimeText = endTimeInput.text.toString()
+            if (isShiftStarted && isShiftStopped) {
+                val startTimeText = startTimeInput.text.toString()
+                val endTimeText = endTimeInput.text.toString()
 
-            // Validate inputs
-            if (startTimeText.isEmpty() || endTimeText.isEmpty()) {
-                Toast.makeText(this, "Please enter both start and end times.", Toast.LENGTH_SHORT)
-                    .show()
-                return@setOnClickListener
+                if (startTimeText.isEmpty() || endTimeText.isEmpty()) {
+                    Toast.makeText(this, "Please enter both start and end times.", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val selectedDateString = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(currentDate.time)
+
+                saveShiftData(selectedDateString, startTimeText, endTimeText)
+
+                // Reset the state for the next shift
+                isShiftStarted = false
+                isShiftStopped = false
+                totalDuration = 0
+                secondsElapsed = 0
+                startTimeInput.text.clear()
+                endTimeInput.text.clear()
+                timerTextView.text = "00:00:00"
+                Toast.makeText(this, "Shift submitted successfully. You can start a new shift.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Please complete the shift before submitting.", Toast.LENGTH_SHORT).show()
             }
-
-            // Convert times to timestamps if manually entered
-            startTime = getTimestampFromTime(startTimeText)
-            endTime = getTimestampFromTime(endTimeText)
-
-            // Calculate duration and salary
-            val durationHours = calculateDuration(startTime, endTime)
-            val salary = calculateSalary(durationHours)
-
-            // Debugging logs
-            Log.d("SubmitShiftActivity", "Start Time: $startTimeText, End Time: $endTimeText")
-            Log.d("SubmitShiftActivity", "Duration: $durationHours hours, Salary: $$salary")
-
-            // Save everything to Firebase
-            saveShiftData(startTimeText, endTimeText, durationHours, salary)
         }
+    }
+
+    private fun updateDisplayedDate() {
+        val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(currentDate.time)
+        selectedDateTextView.text = formattedDate
     }
 
     private fun getFormattedTime(timestamp: Long): String {
@@ -91,66 +133,53 @@ class SubmitShiftActivity : AppCompatActivity() {
         return sdf.format(Date(timestamp))
     }
 
-    private fun getTimestampFromTime(time: String): Long {
-        val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-        return sdf.parse(time)?.time ?: 0L
+    private fun startTimer() {
+        handler.post(object : Runnable {
+            override fun run() {
+                if (isTimerRunning) {
+                    secondsElapsed++
+                    val hours = secondsElapsed / 3600
+                    val minutes = (secondsElapsed % 3600) / 60
+                    val seconds = secondsElapsed % 60
+                    val time = String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                    timerTextView.text = time
+                    handler.postDelayed(this, 1000)
+                }
+            }
+        })
     }
 
-    private fun calculateDuration(startTime: Long, endTime: Long): Double {
-        val durationMillis = endTime - startTime
-        return durationMillis / (1000.0 * 60 * 60)  // Convert milliseconds to hours
+    private fun stopTimer() {
+        isTimerRunning = false
     }
 
-    private fun calculateSalary(durationHours: Double): Double {
-        val hourlyRate = 20.0  // Example hourly rate
-        return durationHours * hourlyRate
-    }
-
-    // In SubmitShiftActivity
-    private fun saveShiftData(
-        startTime: String,
-        endTime: String,
-        duration: Double,
-        salary: Double
-    ) {
+    private fun saveShiftData(date: String, startTime: String, endTime: String) {
         val user = auth.currentUser?.uid
         val db = Firebase.firestore
 
         if (user != null) {
-            // Get the current date
-            val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
-
-            // Reference to the user's document and specific date
-            val userDocRef =
-                db.collection("users").document(user).collection("shifts").document(currentDate)
-
-            // Show loading indicator
-            showLoadingIndicator(true)
+            val userDocRef = db.collection("users").document(user).collection("shifts").document(date)
 
             userDocRef.get().addOnSuccessListener { document ->
                 if (document.exists()) {
-                    // Update existing document for the current date
-                    updateTimes(document, startTime, endTime, duration, salary, userDocRef)
+                    updateTimes(document, startTime, endTime, userDocRef)
                 } else {
-                    // Initialize new document for the current date
-                    initDocument(userDocRef, startTime, endTime, duration, salary)
+                    initDocument(userDocRef, startTime, endTime)
                 }
             }.addOnFailureListener {
-                Toast.makeText(this, "Error getting document: ${it.message}", Toast.LENGTH_LONG)
-                    .show()
-                showLoadingIndicator(false)
+                Toast.makeText(this, "Error getting document: ${it.message}", Toast.LENGTH_LONG).show()
             }
         } else {
             Toast.makeText(this, "User is not authenticated.", Toast.LENGTH_LONG).show()
         }
     }
 
-    private fun initDocument(userDocRef: DocumentReference, startTime: String, endTime: String, duration: Double, salary: Double) {
+    private fun initDocument(userDocRef: DocumentReference, startTime: String, endTime: String) {
         val shiftData = hashMapOf(
             "startTime" to startTime,
             "endTime" to endTime,
-            "duration" to duration,
-            "salary" to salary
+            "duration" to calculateDuration(startTime, endTime),
+            "salary" to calculateSalary(calculateDuration(startTime, endTime))
         )
         val shiftArray = arrayListOf(shiftData)
         userDocRef.set(mapOf("shiftArray" to shiftArray))
@@ -162,14 +191,13 @@ class SubmitShiftActivity : AppCompatActivity() {
             }
     }
 
-    private fun updateTimes(document: DocumentSnapshot, startTime: String, endTime: String, duration: Double, salary: Double, userDocRef: DocumentReference) {
+    private fun updateTimes(document: DocumentSnapshot, startTime: String, endTime: String, userDocRef: DocumentReference) {
         val newShiftData = hashMapOf(
             "startTime" to startTime,
             "endTime" to endTime,
-            "duration" to duration,
-            "salary" to salary
+            "duration" to calculateDuration(startTime, endTime),
+            "salary" to calculateSalary(calculateDuration(startTime, endTime))
         )
-        // Convert existing data to a list of maps
         val shiftArray = (document.get("shiftArray") as? List<*>)?.mapNotNull { it as? Map<String, Any> } ?: emptyList()
         val shiftArrayList = ArrayList(shiftArray)
         shiftArrayList.add(newShiftData)
@@ -183,14 +211,16 @@ class SubmitShiftActivity : AppCompatActivity() {
             }
     }
 
+    private fun calculateDuration(startTime: String, endTime: String): Double {
+        val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        val start = sdf.parse(startTime)?.time ?: 0L
+        val end = sdf.parse(endTime)?.time ?: 0L
 
-    // Function to show/hide a loading indicator
-    private fun showLoadingIndicator(show: Boolean) {
-        // Show or hide a ProgressBar or some UI element to indicate loading
+        return (end - start) / (1000.0 * 60 * 60) + totalDuration / (1000.0 * 60 * 60) // Convert milliseconds to hours and add total duration
     }
 
-    // Function to fetch data again and update UI (e.g., refresh calendar view)
-    private fun fetchDataAndUpdateUI() {
-        // Implementation to fetch data and update the calendar or other UI components
+    private fun calculateSalary(durationHours: Double): Double {
+        val hourlyRate = 20.0  // Example hourly rate
+        return durationHours * hourlyRate
     }
 }
