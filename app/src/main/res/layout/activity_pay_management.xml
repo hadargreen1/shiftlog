@@ -63,11 +63,19 @@
         android:text="Calculate Net Income"
         android:layout_marginTop="20dp"/>
 
-    <!-- Export Data Button -->
+
     <Button
-        android:id="@+id/exportDataButton"
+        android:id="@+id/exportPdfButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Export Data"
+        android:text="Export to PDF"
+        android:layout_marginTop="12dp" />
+
+    <Button
+        android:id="@+id/exportExcelButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Export to Excel"
         android:layout_marginTop="12dp"/>
+
 </LinearLayout>

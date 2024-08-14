@@ -1,13 +1,20 @@
 package com.example.shiftlog
 
+import android.content.Intent
 import android.os.Bundle
 import android.os.Environment
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.itextpdf.kernel.pdf.PdfDocument
+import com.itextpdf.kernel.pdf.PdfWriter
+import com.itextpdf.layout.Document
+import com.itextpdf.layout.element.Paragraph
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import java.io.File
 import java.io.FileOutputStream
 
@@ -20,7 +27,8 @@ class PayManagementActivity : AppCompatActivity() {
     private lateinit var otherDeductionsInput: EditText
     private lateinit var netIncomeTextView: EditText
     private lateinit var calculateButton: Button
-    private lateinit var exportDataButton: Button
+    private lateinit var exportPdfButton: Button
+    private lateinit var exportExcelButton: Button
 
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
@@ -39,7 +47,8 @@ class PayManagementActivity : AppCompatActivity() {
         otherDeductionsInput = findViewById(R.id.otherDeductionsInput)
         netIncomeTextView = findViewById(R.id.netIncomeTextView)
         calculateButton = findViewById(R.id.calculateButton)
-        exportDataButton = findViewById(R.id.exportDataButton)
+        exportPdfButton = findViewById(R.id.exportPdfButton)
+        exportExcelButton = findViewById(R.id.exportExcelButton)
 
         // Fetch current hourly wage and update monthly salary input
         fetchHourlyWage()
@@ -48,9 +57,14 @@ class PayManagementActivity : AppCompatActivity() {
             calculateNetIncome()
         }
 
-        exportDataButton.setOnClickListener {
-            exportUserData()
+        exportPdfButton.setOnClickListener {
+            exportUserData("PDF")
         }
+
+        exportExcelButton.setOnClickListener {
+            exportUserData("Excel")
+        }
+
     }
 
     private fun fetchHourlyWage() {
@@ -82,25 +96,83 @@ class PayManagementActivity : AppCompatActivity() {
         netIncomeTextView.setText(netIncome.toString())
     }
 
-    private fun exportUserData() {
-        val userData = """
-            Monthly Salary: ${monthlySalaryInput.text}
-            Taxes: ${taxInput.text}
-            Pension: ${pensionInput.text}
-            Other Deductions: ${otherDeductionsInput.text}
-            Net Income: ${netIncomeTextView.text}
-        """.trimIndent()
+    private fun exportUserData(format: String) {
+        when (format) {
+            "PDF" -> createPdf()
+            "Excel" -> createExcel()
+        }
+    }
 
-        val fileName = "UserData.txt"
+    private fun createPdf() {
+        val fileName = "UserData.pdf"
         val file = File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), fileName)
 
         try {
-            val fos = FileOutputStream(file)
-            fos.write(userData.toByteArray())
-            fos.close()
-            Toast.makeText(this, "Data exported to ${file.absolutePath}", Toast.LENGTH_LONG).show()
+            val writer = PdfWriter(file)
+            val pdfDoc = PdfDocument(writer)
+            val document = Document(pdfDoc)
+            document.add(Paragraph("Monthly Salary: ${monthlySalaryInput.text}"))
+            document.add(Paragraph("Taxes: ${taxInput.text}"))
+            document.add(Paragraph("Pension: ${pensionInput.text}"))
+            document.add(Paragraph("Other Deductions: ${otherDeductionsInput.text}"))
+            document.add(Paragraph("Net Income: ${netIncomeTextView.text}"))
+            document.close()
+
+            shareFile(file)
         } catch (e: Exception) {
-            Toast.makeText(this, "Error exporting data: ${e.message}", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Error exporting data to PDF: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
+
+    private fun createExcel() {
+        val fileName = "UserData.xlsx"
+        val file = File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), fileName)
+
+        try {
+            val workbook = XSSFWorkbook()
+            val sheet = workbook.createSheet("User Data")
+
+            val headerRow = sheet.createRow(0)
+            headerRow.createCell(0).setCellValue("Field")
+            headerRow.createCell(1).setCellValue("Value")
+
+            val dataRow = sheet.createRow(1)
+            dataRow.createCell(0).setCellValue("Monthly Salary")
+            dataRow.createCell(1).setCellValue(monthlySalaryInput.text.toString())
+
+            val taxRow = sheet.createRow(2)
+            taxRow.createCell(0).setCellValue("Taxes")
+            taxRow.createCell(1).setCellValue(taxInput.text.toString())
+
+            val pensionRow = sheet.createRow(3)
+            pensionRow.createCell(0).setCellValue("Pension")
+            pensionRow.createCell(1).setCellValue(pensionInput.text.toString())
+
+            val otherRow = sheet.createRow(4)
+            otherRow.createCell(0).setCellValue("Other Deductions")
+            otherRow.createCell(1).setCellValue(otherDeductionsInput.text.toString())
+
+            val netIncomeRow = sheet.createRow(5)
+            netIncomeRow.createCell(0).setCellValue("Net Income")
+            netIncomeRow.createCell(1).setCellValue(netIncomeTextView.text.toString())
+
+            val fos = FileOutputStream(file)
+            workbook.write(fos)
+            fos.close()
+
+            shareFile(file)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error exporting data to Excel: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun shareFile(file: File) {
+        val uri = FileProvider.getUriForFile(this, "${applicationContext.packageName}.provider", file)
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = if (file.name.endsWith(".pdf")) "application/pdf" else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        intent.putExtra(Intent.EXTRA_STREAM, uri)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        startActivity(Intent.createChooser(intent, "Share file via"))
+    }
+
 }
