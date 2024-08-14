@@ -17,6 +17,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -24,14 +25,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var auth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
     private lateinit var daysWorkedTextView: TextView
     private lateinit var salaryGainedTextView: TextView
+    private lateinit var userNameTextView: TextView
+    private lateinit var userEmailTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
 
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -41,12 +46,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         navView.setNavigationItemSelectedListener(this)
 
         val headerView = navView.getHeaderView(0)
-        val userNameTextView = headerView.findViewById<TextView>(R.id.nav_user_name)
-        val userEmailTextView = headerView.findViewById<TextView>(R.id.nav_user_email)
-
-        // Set user details here
-        userNameTextView.text = "John Doe"
-        userEmailTextView.text = "john.doe@example.com"
+        userNameTextView = headerView.findViewById(R.id.nav_user_name)
+        userEmailTextView = headerView.findViewById(R.id.nav_user_email)
 
         val toggle = ActionBarDrawerToggle(
             this, drawerLayout, toolbar,
@@ -73,9 +74,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun fetchDaysWorkedAndSalary() {
         val user = auth.currentUser?.uid
         val db = FirebaseDatabase.getInstance("https://shiftlog-6a430-default-rtdb.europe-west1.firebasedatabase.app").reference
+        val firestore = FirebaseFirestore.getInstance()
 
         if (user != null) {
             val userRef = db.child("users").child(user).child("shifts")
+            val userFirestoreRef = firestore.collection("users").document(user)
+
+            // Fetch shift data
             userRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     var totalDaysWorked = 0
@@ -96,16 +101,55 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         }
                     }
 
-                    daysWorkedTextView.text = "Days Worked: $totalDaysWorked"
-                    salaryGainedTextView.text = "Salary Gained: $${String.format("%.2f", totalSalary)}"
+                    // Update UI with shift data
+                    runOnUiThread {
+                        daysWorkedTextView.text = "Days Worked: $totalDaysWorked"
+                        salaryGainedTextView.text = "Salary Gained: $${String.format("%.2f", totalSalary)}"
+                    }
+
+                    // Fetch user data from Firestore
+                    userFirestoreRef.get().addOnSuccessListener { document ->
+                        if (document != null && document.exists()) {
+                            val userName = document.getString("fullName") ?: "N/A"
+                            val userEmail = document.getString("email") ?: "N/A"
+
+                            // Update UI with user data
+                            runOnUiThread {
+                                userNameTextView.text = "Name: $userName"
+                                userEmailTextView.text = "Email: $userEmail"
+                            }
+                        } else {
+                            // Handle case where document does not exist
+                            runOnUiThread {
+                                userNameTextView.text = "No user data found"
+                                userEmailTextView.text = "No user data found"
+                            }
+                        }
+                    }.addOnFailureListener { e ->
+                        // Handle possible errors
+                        runOnUiThread {
+                            userNameTextView.text = "Error fetching data"
+                            userEmailTextView.text = "Error fetching data"
+                        }
+                    }
                 }
 
                 override fun onCancelled(databaseError: DatabaseError) {
-                    Snackbar.make(drawerLayout, "Error fetching data: ${databaseError.message}", Snackbar.LENGTH_LONG).show()
+                    // Handle possible errors
+                    runOnUiThread {
+                        daysWorkedTextView.text = "Error fetching shift data"
+                        salaryGainedTextView.text = "Error fetching shift data"
+                    }
                 }
             })
         } else {
-            Snackbar.make(drawerLayout, "User is not authenticated.", Snackbar.LENGTH_LONG).show()
+            // Handle case where user is not logged in
+            runOnUiThread {
+                daysWorkedTextView.text = "No user logged in"
+                salaryGainedTextView.text = "No user logged in"
+                userNameTextView.text = "No user logged in"
+                userEmailTextView.text = "No user logged in"
+            }
         }
     }
 

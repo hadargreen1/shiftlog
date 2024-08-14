@@ -19,6 +19,7 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var passwordInput: EditText
     private lateinit var dobInput: EditText
     private lateinit var registerButton: Button
+    private lateinit var fullNameInput: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,6 +29,7 @@ class RegisterActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
 
         // Link UI elements
+        fullNameInput = findViewById(R.id.fullNameInput)
         emailInput = findViewById(R.id.emailInput)
         passwordInput = findViewById(R.id.passwordInput)
         dobInput = findViewById(R.id.dobInput)
@@ -35,20 +37,20 @@ class RegisterActivity : AppCompatActivity() {
 
         // Set register button onClick listener
         registerButton.setOnClickListener {
+            val fullName = fullNameInput.text.toString()
             val email = emailInput.text.toString()
             val password = passwordInput.text.toString()
             val dob = dobInput.text.toString()
-            registerUser(email, password, dob)
+            registerUser(fullName, email, password, dob)
         }
     }
 
-    // Method to handle user registration
-    private fun registerUser(email: String, password: String, dob: String) {
+    private fun registerUser(fullName: String, email: String, password: String, dob: String) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     // If registration is successful, save additional user data
-                    saveUserData(email,dob,password)
+                    saveUserData(fullName, email, dob, password)
 
                     // Show success message and navigate to MainActivity
                     Toast.makeText(this, "Registration successful.", Toast.LENGTH_SHORT).show()
@@ -65,22 +67,23 @@ class RegisterActivity : AppCompatActivity() {
             }
     }
 
-    // Method to save user data to Firebase  Database
-    private fun saveUserData(email: String, dob: String, password: String) {
+    private fun saveUserData(fullName: String, email: String, dob: String, password: String) {
         val user = auth.currentUser?.uid
         val db = Firebase.firestore
 
         if (user != null) {
             // Create a map for the user data
             val userData = HashMap<String, String>()
+            userData["fullName"] = fullName
             userData["email"] = email
             userData["dob"] = dob
             userData["password"] = password
 
-            // Save user data in Firestore under the user's unique ID
+
             db.collection("users").document(user).set(userData)
                 .addOnSuccessListener {
                     // Clear input fields after successful save
+                    fullNameInput.text?.clear()
                     passwordInput.text?.clear()
                     dobInput.text?.clear()
                     emailInput.text?.clear()

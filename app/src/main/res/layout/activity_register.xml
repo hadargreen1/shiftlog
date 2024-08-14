@@ -4,6 +4,33 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- Headline for Register Form -->
+    <TextView
+        android:id="@+id/registerHeadline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Register Form"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="24dp"
+        tools:ignore="HardcodedText" />
+
+    <!-- Full Name input field -->
+    <EditText
+        android:id="@+id/fullNameInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Full Name"
+        android:importantForAutofill="no"
+        android:inputType="textPersonName"
+        android:padding="12dp"
+        android:minHeight="48dp"
+        android:layout_below="@id/registerHeadline"
+        android:layout_marginBottom="16dp"
+        tools:ignore="VisualLintTextFieldSize" />
+
     <!-- Email input field -->
     <EditText
         android:id="@+id/emailInput"
@@ -14,6 +41,8 @@
         android:inputType="textEmailAddress"
         android:padding="12dp"
         android:minHeight="48dp"
+        android:layout_below="@id/fullNameInput"
+        android:layout_marginBottom="16dp"
         tools:ignore="VisualLintTextFieldSize" />
 
     <!-- Password input field -->
@@ -24,7 +53,7 @@
         android:hint="@string/password"
         android:inputType="textPassword"
         android:layout_below="@id/emailInput"
-        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
         android:padding="12dp"
         android:minHeight="48dp"
         tools:ignore="VisualLintTextFieldSize" />
@@ -37,7 +66,7 @@
         android:hint="Date of Birth (dd/mm/yyyy)"
         android:inputType="date"
         android:layout_below="@id/passwordInput"
-        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
         android:padding="12dp"
         android:minHeight="48dp"
         tools:ignore="VisualLintTextFieldSize" />
