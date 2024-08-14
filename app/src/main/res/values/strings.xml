@@ -14,6 +14,9 @@
     <string name="start_time">Start Time</string>
     <string name="end_time">End Time</string>
     <string name="salary_earned">Salary Earned:</string>
+    <string name="home">Home</string>
+    <string name="date_of_birth_dd_mm_yyyy">Date of Birth (dd/mm/yyyy)</string>
+    <string name="hourly_wage">Hourly Wage</string>
 
 
 </resources>

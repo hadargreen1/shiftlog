@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- Headline for Register Form -->
     <TextView
         android:id="@+id/registerHeadline"
         android:layout_width="wrap_content"
@@ -17,7 +16,6 @@
         android:layout_marginBottom="24dp"
         tools:ignore="HardcodedText" />
 
-    <!-- Full Name input field -->
     <EditText
         android:id="@+id/fullNameInput"
         android:layout_width="match_parent"
@@ -31,7 +29,6 @@
         android:layout_marginBottom="16dp"
         tools:ignore="VisualLintTextFieldSize" />
 
-    <!-- Email input field -->
     <EditText
         android:id="@+id/emailInput"
         android:layout_width="match_parent"
@@ -45,7 +42,6 @@
         android:layout_marginBottom="16dp"
         tools:ignore="VisualLintTextFieldSize" />
 
-    <!-- Password input field -->
     <EditText
         android:id="@+id/passwordInput"
         android:layout_width="match_parent"
@@ -58,12 +54,11 @@
         android:minHeight="48dp"
         tools:ignore="VisualLintTextFieldSize" />
 
-    <!-- Date of Birth input field -->
     <EditText
         android:id="@+id/dobInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Date of Birth (dd/mm/yyyy)"
+        android:hint="@string/date_of_birth_dd_mm_yyyy"
         android:inputType="date"
         android:layout_below="@id/passwordInput"
         android:layout_marginBottom="16dp"
@@ -71,13 +66,27 @@
         android:minHeight="48dp"
         tools:ignore="VisualLintTextFieldSize" />
 
+    <EditText
+        android:id="@+id/hourlyWageInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dobInput"
+        android:hint="@string/hourly_wage"
+        android:inputType="numberDecimal"
+        android:layout_marginBottom="16dp"
+        android:padding="12dp"
+        android:minHeight="48dp"
+        android:textSize="16sp"
+        android:background="@android:color/transparent" />
+
+
     <!-- Register button -->
     <Button
         android:id="@+id/registerButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/register"
-        android:layout_below="@id/dobInput"
+        android:layout_below="@id/hourlyWageInput"
         android:layout_marginTop="16dp"
         tools:ignore="HardcodedText,VisualLintButtonSize" />
 </RelativeLayout>

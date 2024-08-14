@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="action_settings" type="id" />
+    <item name="monthlySalaryInput" type="id" />
+    <item name="taxInput" type="id" />
+    <item name="pensionInput" type="id" />
+    <item name="otherDeductionsInput" type="id" />
+    <item name="netIncomeTextView" type="id" />
+    <item name="calculateButton" type="id" />
+    <item name="exportDataButton" type="id" />
 </resources>

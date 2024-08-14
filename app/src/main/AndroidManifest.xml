@@ -12,6 +12,7 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".RegisterActivity" />
         <activity android:name=".SubmitShiftActivity" />
+        <activity android:name=".PayManagementActivity" />
         <activity android:name=".StartActivity"
             android:exported="true">
             <intent-filter>

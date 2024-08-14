@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Monthly Salary Input -->
+    <EditText
+        android:id="@+id/monthlySalaryInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Monthly Salary"
+        android:inputType="numberDecimal"
+        android:padding="12dp" />
+
+    <!-- Tax Input -->
+    <EditText
+        android:id="@+id/taxInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Tax"
+        android:inputType="numberDecimal"
+        android:padding="12dp"
+        android:layout_marginTop="12dp"/>
+
+    <!-- Pension Input -->
+    <EditText
+        android:id="@+id/pensionInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Pension"
+        android:inputType="numberDecimal"
+        android:padding="12dp"
+        android:layout_marginTop="12dp"/>
+
+    <!-- Other Deductions Input -->
+    <EditText
+        android:id="@+id/otherDeductionsInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Other Deductions"
+        android:inputType="numberDecimal"
+        android:padding="12dp"
+        android:layout_marginTop="12dp"/>
+
+    <!-- Net Income Display -->
+    <EditText
+        android:id="@+id/netIncomeTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Net Income"
+        android:inputType="numberDecimal"
+        android:padding="12dp"
+        android:layout_marginTop="12dp"
+        android:enabled="false"/>
+
+    <!-- Calculate Button -->
+    <Button
+        android:id="@+id/calculateButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Calculate Net Income"
+        android:layout_marginTop="20dp"/>
+
+    <!-- Export Data Button -->
+    <Button
+        android:id="@+id/exportDataButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Export Data"
+        android:layout_marginTop="12dp"/>
+</LinearLayout>

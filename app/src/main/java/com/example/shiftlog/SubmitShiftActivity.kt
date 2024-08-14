@@ -1,49 +1,52 @@
 package com.example.shiftlog
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
 
 class SubmitShiftActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var firestore: FirebaseFirestore
     private lateinit var selectedDateTextView: TextView
     private lateinit var previousDayButton: Button
     private lateinit var nextDayButton: Button
 
-    private lateinit var startShiftButton: FloatingActionButton
+    private lateinit var startShiftButton: ImageButton
     private lateinit var startTimeInput: EditText
     private lateinit var endTimeInput: EditText
     private lateinit var submitShiftButton: Button
     private lateinit var timerTextView: TextView
 
     private var currentDate: Calendar = Calendar.getInstance()
-    private var isShiftStarted: Boolean = false  // Track if the shift has started
+    private var isShiftStarted: Boolean = false
     private var startTime: Long = 0
     private var endTime: Long = 0
 
     private val handler = Handler(Looper.getMainLooper())
     private var secondsElapsed = 0
     private var isTimerRunning = false
+    private var hourlyWage: Double = 0.0  // This will store the user's hourly wage
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_submit_shift)
 
-        // Initialize Firebase Auth
         auth = FirebaseAuth.getInstance()
+        firestore = FirebaseFirestore.getInstance()
 
-        // Link UI elements
         selectedDateTextView = findViewById(R.id.selectedDateTextView)
         previousDayButton = findViewById(R.id.previousDayButton)
         nextDayButton = findViewById(R.id.nextDayButton)
@@ -55,6 +58,9 @@ class SubmitShiftActivity : AppCompatActivity() {
 
         // Set initial date to today
         updateDisplayedDate()
+
+        // Fetch the user's hourly wage from Firestore
+        fetchHourlyWage()
 
         // Handle previous day button click
         previousDayButton.setOnClickListener {
@@ -102,6 +108,23 @@ class SubmitShiftActivity : AppCompatActivity() {
         }
     }
 
+    private fun fetchHourlyWage() {
+        val user = auth.currentUser?.uid
+        if (user != null) {
+            firestore.collection("users").document(user).get()
+                .addOnSuccessListener { document ->
+                    if (document != null && document.exists()) {
+                        hourlyWage = document.getDouble("hourlyWage") ?: 0.0
+                    } else {
+                        Toast.makeText(this, "No user data found", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(this, "Error fetching data: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+        }
+    }
+
     private fun updateDisplayedDate() {
         val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(currentDate.time)
         selectedDateTextView.text = formattedDate
@@ -133,16 +156,21 @@ class SubmitShiftActivity : AppCompatActivity() {
         isTimerRunning = false
         handler.removeCallbacksAndMessages(null)
     }
+
+    @SuppressLint("SetTextI18n")
     private fun saveShiftDataToRealtimeDatabase(date: String, startTime: String, endTime: String) {
         val user = auth.currentUser?.uid
         val db = FirebaseDatabase.getInstance("https://shiftlog-6a430-default-rtdb.europe-west1.firebasedatabase.app").reference
 
         if (user != null) {
+            val duration = calculateDuration(startTime, endTime)
+            val salary = calculateSalary(duration, hourlyWage)
+
             val shiftData = hashMapOf(
                 "startTime" to startTime,
                 "endTime" to endTime,
-                "duration" to calculateDuration(startTime, endTime),
-                "salary" to calculateSalary(calculateDuration(startTime, endTime))
+                "duration" to duration,
+                "salary" to salary
             )
 
             // Save the shift data under users/{user_id}/shifts/{date}
@@ -162,8 +190,6 @@ class SubmitShiftActivity : AppCompatActivity() {
         }
     }
 
-
-
     private fun calculateDuration(startTime: String, endTime: String): Double {
         val sdf = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
         val start = sdf.parse(startTime)?.time ?: 0L
@@ -171,9 +197,7 @@ class SubmitShiftActivity : AppCompatActivity() {
         return (end - start) / (1000.0 * 60 * 60)  // Convert milliseconds to hours
     }
 
-    private fun calculateSalary(durationHours: Double): Double {
-        val hourlyRate = 20.0  // Example hourly rate
-        return durationHours * hourlyRate
+    private fun calculateSalary(durationHours: Double, hourlyWage: Double): Double {
+        return durationHours * hourlyWage
     }
-
 }

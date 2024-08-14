@@ -1,8 +1,8 @@
 package com.example.shiftlog
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
@@ -19,8 +19,10 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
+@Suppress("DEPRECATION")
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var drawerLayout: DrawerLayout
@@ -71,6 +73,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun fetchDaysWorkedAndSalary() {
         val user = auth.currentUser?.uid
         val db = FirebaseDatabase.getInstance("https://shiftlog-6a430-default-rtdb.europe-west1.firebasedatabase.app").reference
@@ -82,6 +85,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             // Fetch shift data
             userRef.addValueEventListener(object : ValueEventListener {
+                @SuppressLint("SetTextI18n", "DefaultLocale")
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     var totalDaysWorked = 0
                     var totalHoursWorked = 0.0
@@ -107,7 +111,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         salaryGainedTextView.text = "Salary Gained: $${String.format("%.2f", totalSalary)}"
                     }
 
-                    // Fetch user data from Firestore
+
                     userFirestoreRef.get().addOnSuccessListener { document ->
                         if (document != null && document.exists()) {
                             val userName = document.getString("fullName") ?: "N/A"
@@ -125,7 +129,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                                 userEmailTextView.text = "No user data found"
                             }
                         }
-                    }.addOnFailureListener { e ->
+                    }.addOnFailureListener {
                         // Handle possible errors
                         runOnUiThread {
                             userNameTextView.text = "Error fetching data"
@@ -134,6 +138,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     }
                 }
 
+                @SuppressLint("SetTextI18n")
                 override fun onCancelled(databaseError: DatabaseError) {
                     // Handle possible errors
                     runOnUiThread {
@@ -153,6 +158,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (drawerLayout.isDrawerOpen(androidx.core.view.GravityCompat.START)) {
             drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
@@ -172,9 +178,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val intent = Intent(this, SubmitShiftActivity::class.java)
                 startActivity(intent)
             }
-            R.id.nav_share -> {
-                Snackbar.make(findViewById(R.id.fragment_container), "Achievements clicked", Snackbar.LENGTH_LONG).show()
-            }
+            R.id.pay_management -> {
+                val intent = Intent(this, PayManagementActivity::class.java)
+                startActivity(intent)}
             R.id.nav_info -> {
                 Snackbar.make(findViewById(R.id.fragment_container), "Account Info clicked", Snackbar.LENGTH_LONG).show()
             }

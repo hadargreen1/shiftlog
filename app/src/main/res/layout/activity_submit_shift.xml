@@ -43,7 +43,8 @@
         android:layout_marginBottom="16dp"
         android:padding="8dp"
         app:cardCornerRadius="8dp"
-        app:cardElevation="4dp">
+        app:cardElevation="4dp"
+        android:background="@drawable/cardview_border"> <!-- Apply custom background -->
 
         <EditText
             android:id="@+id/startTimeInput"
@@ -55,6 +56,7 @@
             android:inputType="time"
             android:padding="12dp"
             android:textSize="16sp"
+            android:textColor="@android:color/black"
             android:background="@android:color/transparent" />
 
     </androidx.cardview.widget.CardView>
@@ -66,7 +68,8 @@
         android:layout_marginBottom="16dp"
         android:padding="8dp"
         app:cardCornerRadius="8dp"
-        app:cardElevation="4dp">
+        app:cardElevation="4dp"
+        android:background="@drawable/cardview_border"> <!-- Apply custom background -->
 
         <EditText
             android:id="@+id/endTimeInput"
@@ -78,6 +81,7 @@
             android:inputType="time"
             android:padding="12dp"
             android:textSize="16sp"
+            android:textColor="@android:color/black"
             android:background="@android:color/transparent" />
 
     </androidx.cardview.widget.CardView>
@@ -95,21 +99,19 @@
         android:textColor="@android:color/black"
         android:layout_marginTop="16dp"/>
 
-    <!-- FloatingActionButton for Starting Shift -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <!-- Circular ImageButton -->
+    <ImageButton
         android:id="@+id/startShiftButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
         android:layout_gravity="center"
         android:layout_marginTop="100dp"
         android:layout_marginBottom="16dp"
-        android:scaleX="2"
-        android:scaleY="2"
-        android:src="@drawable/ic_timer"
-        android:contentDescription="@string/start_shift"
-        app:fabSize="normal"
-        app:backgroundTint="@color/colorPrimary"
-        android:backgroundTintMode="src_in"/>
+        android:background="@drawable/circle_background"
+    android:src="?android:attr/fingerprintAuthDrawable"
+    android:contentDescription="@string/start_shift"
+    android:scaleType="fitCenter"
+    android:padding="0dp" />
 
     <!-- Button to Submit Shift -->
     <Button
@@ -117,7 +119,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
-        android:backgroundTint="@color/colorPrimary"
+        android:backgroundTint="@color/colorAccent"
         android:textColor="@android:color/white"
         android:text="@string/submit_shift"
         android:textAllCaps="false"
@@ -125,6 +127,6 @@
         android:textSize="16sp"
         android:elevation="2dp"
         android:layout_gravity="center"
-        android:background="@drawable/rounded_button" />
+        android:background="@drawable/rounded_button" /> <!-- Use custom rounded background -->
 
 </LinearLayout>
