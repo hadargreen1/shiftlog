@@ -19,12 +19,12 @@
         <item
             android:id="@+id/pay_management"
             android:icon="@android:drawable/ic_menu_month"
-            android:title="Pay Management"/>
+            android:title="@string/pay_management"/>
 
         <item
             android:id="@+id/nav_info"
             android:icon="@drawable/baseline_info_24"
-            android:title="Account Info"/>
+            android:title="@string/account_info"/>
 
     </group>
 
@@ -33,7 +33,7 @@
             <item
                 android:id="@+id/nav_logout"
                 android:icon="@drawable/baseline_exit_to_app_24"
-                android:title="Logout" />
+                android:title="@string/logout" />
         </menu>
     </item>
 

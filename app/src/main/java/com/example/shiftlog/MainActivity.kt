@@ -182,8 +182,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val intent = Intent(this, PayManagementActivity::class.java)
                 startActivity(intent)}
             R.id.nav_info -> {
-                Snackbar.make(findViewById(R.id.fragment_container), "Account Info clicked", Snackbar.LENGTH_LONG).show()
-            }
+                val intent = Intent(this, AccountInfoActivity::class.java)
+                startActivity(intent)}
             R.id.nav_logout -> {
                 auth.signOut()
                 val intent = Intent(this, StartActivity::class.java)

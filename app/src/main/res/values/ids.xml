@@ -8,4 +8,6 @@
     <item name="netIncomeTextView" type="id" />
     <item name="calculateButton" type="id" />
     <item name="exportDataButton" type="id" />
+    <item name="wageRateEditText" type="id" />
+    <item name="saveButton" type="id" />
 </resources>

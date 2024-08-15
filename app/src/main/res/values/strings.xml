@@ -17,6 +17,21 @@
     <string name="home">Home</string>
     <string name="date_of_birth_dd_mm_yyyy">Date of Birth (dd/mm/yyyy)</string>
     <string name="hourly_wage">Hourly Wage</string>
+    <string name="select_month">Select Month:</string>
+    <string name="yyyy_mm">YYYY-MM</string>
+    <string name="select_month_and_year">Select month and year</string>
+    <string name="monthly_salary">Monthly Salary:</string>
+    <string name="net_income">Net income</string>
+    <string name="days_worked_0" />
+    <string name="salary_gained_0_00" />
+    <string name="_00_00_00">00:00:00</string>
+    <string name="lt"><![CDATA[<]]></string>
+    <string name="gt"><![CDATA[>]]></string>
+    <string name="pay_management">Pay Management</string>
+    <string name="logout">Logout</string>
+    <string name="account_info">Account Info</string>
+    <string name="wage_rate">Wage Rate</string>
+    <string name="save">Save</string>
 
 
 </resources>

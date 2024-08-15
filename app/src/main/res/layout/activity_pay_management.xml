@@ -1,81 +1,268 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Month Picker -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/select_month"
+            android:textSize="16sp"
+            android:layout_weight="2"
+            android:gravity="start"
+            android:paddingEnd="16dp"
+            tools:ignore="RtlSymmetry" />
+
+        <EditText
+            android:id="@+id/monthPickerInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:autofillHints=""
+            android:hint="@string/yyyy_mm"
+            android:contentDescription="@string/select_month_and_year"
+            android:inputType="date"
+            android:padding="12dp"
+            tools:ignore="ContentDescription" />
+    </LinearLayout>
+
     <!-- Monthly Salary Input -->
-    <EditText
-        android:id="@+id/monthlySalaryInput"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Monthly Salary"
-        android:inputType="numberDecimal"
-        android:padding="12dp" />
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
 
-    <!-- Tax Input -->
-    <EditText
-        android:id="@+id/taxInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Tax"
-        android:inputType="numberDecimal"
-        android:padding="12dp"
-        android:layout_marginTop="12dp"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:text="@string/monthly_salary"
+            android:textSize="16sp"
+            android:layout_weight="2"
+            android:gravity="start"
+            android:paddingEnd="16dp"
+            tools:ignore="RtlSymmetry" />
 
-    <!-- Pension Input -->
-    <EditText
-        android:id="@+id/pensionInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Pension"
-        android:inputType="numberDecimal"
-        android:padding="12dp"
-        android:layout_marginTop="12dp"/>
+        <EditText
+            android:id="@+id/monthlySalaryInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:hint="Monthly Salary"
+            android:inputType="numberDecimal"
+            android:padding="12dp"
+            android:enabled="false"/>
+    </LinearLayout>
 
-    <!-- Other Deductions Input -->
-    <EditText
-        android:id="@+id/otherDeductionsInput"
+    <!-- Deductions Input -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Other Deductions"
-        android:inputType="numberDecimal"
-        android:padding="12dp"
-        android:layout_marginTop="12dp"/>
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Deductions:"
+            android:textSize="16sp"
+            android:layout_weight="2"
+            android:gravity="start"
+            android:paddingEnd="16dp"/>
+
+        <EditText
+            android:id="@+id/deductionsInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:hint="Enter deductions amount"
+            android:inputType="numberDecimal"
+            android:padding="12dp"/>
+    </LinearLayout>
+
+    <!-- Bonuses Input -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Bonuses:"
+            android:textSize="16sp"
+            android:layout_weight="2"
+            android:gravity="start"
+            android:paddingEnd="16dp"/>
+
+        <EditText
+            android:id="@+id/bonusesInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:hint="Enter bonuses amount"
+            android:inputType="numberDecimal"
+            android:padding="12dp"/>
+    </LinearLayout>
+
+    <!-- Tax Display -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Tax:"
+            android:textSize="16sp"
+            android:layout_weight="2"
+            android:gravity="start"
+            android:paddingEnd="16dp"/>
+
+        <EditText
+            android:id="@+id/taxInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:hint="Tax amount"
+            android:inputType="numberDecimal"
+            android:padding="12dp"
+            android:enabled="false"/>
+    </LinearLayout>
+
+    <!-- Pension Display -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Pension:"
+            android:textSize="16sp"
+            android:layout_weight="2"
+            android:gravity="start"
+            android:paddingEnd="16dp"/>
+
+        <EditText
+            android:id="@+id/pensionInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:hint="Pension amount"
+            android:inputType="numberDecimal"
+            android:padding="12dp"
+            android:enabled="false"/>
+    </LinearLayout>
+
+    <!-- Other Deductions Display -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Other Deductions:"
+            android:textSize="16sp"
+            android:layout_weight="2"
+            android:gravity="start"
+            android:paddingEnd="16dp"/>
+
+        <EditText
+            android:id="@+id/otherDeductionsInput"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:hint="Other deductions amount"
+            android:inputType="numberDecimal"
+            android:padding="12dp"
+            android:enabled="false"/>
+    </LinearLayout>
 
     <!-- Net Income Display -->
-    <EditText
-        android:id="@+id/netIncomeTextView"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Net Income"
-        android:inputType="numberDecimal"
-        android:padding="12dp"
-        android:layout_marginTop="12dp"
-        android:enabled="false"/>
+        android:orientation="horizontal"
+        android:layout_marginTop="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Net Income:"
+            android:textSize="16sp"
+            android:layout_weight="2"
+            android:gravity="start"
+            android:paddingEnd="16dp"/>
+
+        <EditText
+            android:id="@+id/netIncomeTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:hint="@string/net_income"
+            android:inputType="numberDecimal"
+            android:padding="12dp"
+            android:enabled="false"/>
+    </LinearLayout>
 
     <!-- Calculate Button -->
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/calculateButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Calculate Net Income"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="20dp" />
 
-
-    <Button
-        android:id="@+id/exportPdfButton"
+    <!-- Export Buttons -->
+    <LinearLayout
+        android:id="@+id/buttonContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Export to PDF"
-        android:layout_marginTop="12dp" />
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal"
+        android:gravity="center_horizontal">
 
-    <Button
-        android:id="@+id/exportExcelButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Export to Excel"
-        android:layout_marginTop="12dp"/>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/exportPdfButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Export to PDF"
+            android:backgroundTint="#B71C1C"
+            android:textColor="@android:color/white"
+            android:contentDescription="Export data to PDF format" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/exportExcelButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Export to Excel"
+            android:backgroundTint="#2E7D32"
+            android:textColor="@android:color/white"
+            android:contentDescription="Export data to Excel format" />
+    </LinearLayout>
+
 
 </LinearLayout>
