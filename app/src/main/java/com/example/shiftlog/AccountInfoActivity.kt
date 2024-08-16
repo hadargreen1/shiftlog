@@ -22,6 +22,7 @@ class AccountInfoActivity : AppCompatActivity(), NavigationView.OnNavigationItem
     private lateinit var firestore: FirebaseFirestore
     private lateinit var wageRateEditText: EditText
     private lateinit var saveButton: Button
+    private lateinit var hourlyWageTextView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +49,7 @@ class AccountInfoActivity : AppCompatActivity(), NavigationView.OnNavigationItem
         // Initialize UI elements
         wageRateEditText = findViewById(R.id.wageRateEditText)
         saveButton = findViewById(R.id.saveButton)
+        hourlyWageTextView = findViewById(R.id.hourlyWageTextView)
 
         // Load user information
         loadUserInfo()
@@ -68,10 +70,12 @@ class AccountInfoActivity : AppCompatActivity(), NavigationView.OnNavigationItem
                 val fullName = document.getString("fullName") ?: "N/A"
                 val email = document.getString("email") ?: "N/A"
                 val wageRate = document.getString("wageRate") ?: "N/A"
+                val hourlyWage = document.getDouble("hourlyWage") ?: 0.0
 
                 findViewById<TextView>(R.id.fullNameTextView).text = "Full Name: $fullName"
                 findViewById<TextView>(R.id.emailTextView).text = "Email: $email"
                 wageRateEditText.setText(wageRate)
+                hourlyWageTextView.text = "Hourly Wage: $${String.format("%.2f", hourlyWage)}"
             }
         }
     }

@@ -29,11 +29,11 @@
             android:layout_height="wrap_content"
             android:layout_weight="3"
             android:autofillHints=""
-            android:hint="@string/yyyy_mm"
             android:contentDescription="@string/select_month_and_year"
+            android:hint="@string/yyyy_mm"
             android:inputType="date"
             android:padding="12dp"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription,EditableContentDescCheck" />
     </LinearLayout>
 
     <!-- Monthly Salary Input -->
@@ -79,7 +79,8 @@
             android:textSize="16sp"
             android:layout_weight="2"
             android:gravity="start"
-            android:paddingEnd="16dp"/>
+            android:paddingEnd="16dp"
+            tools:ignore="HardcodedText" />
 
         <EditText
             android:id="@+id/deductionsInput"
@@ -105,7 +106,8 @@
             android:textSize="16sp"
             android:layout_weight="2"
             android:gravity="start"
-            android:paddingEnd="16dp"/>
+            android:paddingEnd="16dp"
+            tools:ignore="HardcodedText" />
 
         <EditText
             android:id="@+id/bonusesInput"
@@ -131,7 +133,8 @@
             android:textSize="16sp"
             android:layout_weight="2"
             android:gravity="start"
-            android:paddingEnd="16dp"/>
+            android:paddingEnd="16dp"
+            tools:ignore="HardcodedText" />
 
         <EditText
             android:id="@+id/taxInput"
@@ -158,7 +161,8 @@
             android:textSize="16sp"
             android:layout_weight="2"
             android:gravity="start"
-            android:paddingEnd="16dp"/>
+            android:paddingEnd="16dp"
+            tools:ignore="HardcodedText" />
 
         <EditText
             android:id="@+id/pensionInput"
