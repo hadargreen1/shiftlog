@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="176dp"
     android:background="@color/blue_500"
     android:gravity="bottom"
-    android:padding="16dp" >
+    android:padding="16dp">
 
     <ImageView
         android:id="@+id/image_header"
         android:layout_width="wrap_content"
         android:layout_height="90dp"
+        android:contentDescription="TODO"
         tools:srcCompat="@tools:sample/avatars" />
 
     <TextView
         android:id="@+id/nav_user_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="The User"
+        android:text="@string/the_user"
         android:textColor="@color/white"
         android:textStyle="bold"/>
 

@@ -32,6 +32,7 @@
     <string name="account_info">Account Info</string>
     <string name="wage_rate">Wage Rate</string>
     <string name="save">Save</string>
+    <string name="the_user">The User</string>
 
 
 </resources>
