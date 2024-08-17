@@ -1,4 +1,4 @@
-package com.example.shiftlog
+package utilities
 
 import android.os.Bundle
 import android.util.Log
@@ -14,11 +14,12 @@ import com.prolificinteractive.materialcalendarview.CalendarDay
 import java.text.SimpleDateFormat
 import java.util.*
 import android.widget.TextView
+import com.example.shiftlog.R
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.GenericTypeIndicator
 import kotlin.text.*
 
-class CalendarFragment : Fragment() {
+class CalendarUtility : Fragment() {
 
     private lateinit var calendarView: MaterialCalendarView
     private val auth = FirebaseAuth.getInstance()

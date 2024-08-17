@@ -7,24 +7,28 @@
 
     <TextView
         android:id="@+id/startTimeTextView"
+        android:textColor="@android:color/black"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Start Time" />
 
     <TextView
         android:id="@+id/endTimeTextView"
+        android:textColor="@android:color/black"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="End Time" />
 
     <TextView
         android:id="@+id/durationTextView"
+        android:textColor="@android:color/black"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Duration" />
 
     <TextView
         android:id="@+id/salaryTextView"
+        android:textColor="@android:color/black"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Salary" />

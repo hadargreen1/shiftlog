@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#757E7D</color>
-    <color name="purple_500">#757E7D</color>
-    <color name="purple_700">#757E7D</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="blue_500">#757E7D</color>
-    <color name="colorPrimary">#83807A</color>
-    <color name="colorPrimaryDark">#78746D</color>
-    <color name="colorAccent">#757E7D</color>
+    <color name="indigo_500">#3F51B5</color> <!-- Primary -->
+    <color name="indigo_700">#303F9F</color> <!-- Primary Dark / Status Bar -->
+    <color name="white">#FFFFFF</color> <!-- Text on Primary -->
+
+    <!-- Secondary Colors -->
+    <color name="pink_200">#F48FB1</color> <!-- Secondary -->
+    <color name="pink_700">#C2185B</color> <!-- Secondary Dark -->
+    <color name="black">#000000</color> <!-- Text on Secondary -->
+
+    <!-- Neutral / Accent Colors -->
+    <color name="colorAccent">#F48FB1</color>
 </resources>

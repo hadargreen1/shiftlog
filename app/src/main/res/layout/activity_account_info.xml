@@ -33,13 +33,15 @@
                 android:id="@+id/fullNameTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Full Name: "
+                android:textColor="@android:color/black"
+                android:text="@string/full_name"
                 android:textSize="18sp" />
 
             <TextView
                 android:id="@+id/emailTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/black"
                 android:text="Email: "
                 android:textSize="18sp"
                 android:layout_marginTop="8dp" />
@@ -48,7 +50,7 @@
                 android:id="@+id/hourlyWageTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Hourly Wage: $0.00"
+                android:text="@string/hourly_wage_0_00"
                 android:textSize="18sp"
                 android:textColor="@android:color/black"
                 android:layout_marginTop="16dp"

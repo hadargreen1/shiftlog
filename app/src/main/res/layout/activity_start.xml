@@ -1,45 +1,36 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- Email input field -->
-    <EditText
-        android:id="@+id/emailInput"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/Email"
-        android:importantForAutofill="no"
-        android:inputType="textEmailAddress"
-        android:padding="12dp"
-        android:minHeight="48dp"
-        tools:ignore="VisualLintTextFieldSize" />
 
-    <!-- Password input field -->
-    <EditText
-        android:id="@+id/passwordInput"
-        android:layout_width="match_parent"
+    <!-- Welcome Text -->
+    <TextView
+        android:id="@+id/welcomeTextView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:autofillHints=""
-        android:hint="@string/password"
-        android:inputType="textPassword"
-        android:layout_below="@id/emailInput"
-        android:layout_marginTop="16dp"
-        android:padding="12dp"
-        android:minHeight="48dp"
-        tools:ignore="VisualLintTextFieldSize" />
+        android:text="Welcome to Shiftlog"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_below="@id/logoImageView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp" />
 
+    <ImageView
+        android:id="@+id/logoImageView"
+        android:layout_width="323dp"
+        android:layout_height="226dp"
+        android:layout_centerHorizontal="true"
+        android:scaleType="centerInside"
+        android:src="@drawable/logo" />
     <!-- Login button -->
     <Button
         android:id="@+id/loginButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/login"
-        android:layout_below="@id/passwordInput"
-        android:layout_marginTop="16dp"
-        tools:ignore="VisualLintButtonSize" />
+        android:layout_below="@id/welcomeTextView"
+        android:layout_marginTop="250dp" />
 
     <!-- Register button -->
     <Button
@@ -48,8 +39,7 @@
         android:layout_height="wrap_content"
         android:text="Register"
         android:layout_below="@id/loginButton"
-        android:layout_marginTop="16dp"
-        tools:ignore="HardcodedText,VisualLintButtonSize" />
+        android:layout_marginTop="16dp" />
 
     <!-- Forgot Password link -->
     <TextView

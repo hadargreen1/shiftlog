@@ -10,6 +10,7 @@
         android:layout_height="wrap_content"
         android:text="Register Form"
         android:textSize="24sp"
+        android:textColor="@android:color/black"
         android:textStyle="bold"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
