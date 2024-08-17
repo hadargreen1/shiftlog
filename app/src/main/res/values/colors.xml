@@ -5,10 +5,10 @@
     <color name="white">#FFFFFF</color> <!-- Text on Primary -->
 
     <!-- Secondary Colors -->
-    <color name="pink_200">#F48FB1</color> <!-- Secondary -->
+    <color name="blue_200">#90CAF9</color> <!-- Secondary -->
     <color name="pink_700">#C2185B</color> <!-- Secondary Dark -->
     <color name="black">#000000</color> <!-- Text on Secondary -->
 
     <!-- Neutral / Accent Colors -->
-    <color name="colorAccent">#F48FB1</color>
+    <color name="colorAccent">#90CAF9</color>
 </resources>

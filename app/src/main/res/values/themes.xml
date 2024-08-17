@@ -11,7 +11,7 @@
         <item name="colorOnPrimary">@color/white</item>
 
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/pink_200</item>
+        <item name="colorSecondary">@color/blue_200</item>
         <item name="colorSecondaryVariant">@color/pink_700</item>
         <item name="colorOnSecondary">@color/white</item>
 
@@ -20,6 +20,6 @@
 
         <!-- Customize your theme here. -->
         <item name="colorPrimaryDark">@color/indigo_700</item>
-        <item name="colorAccent">@color/pink_200</item>
+        <item name="colorAccent">@color/blue_200</item>
     </style>
 </resources>
