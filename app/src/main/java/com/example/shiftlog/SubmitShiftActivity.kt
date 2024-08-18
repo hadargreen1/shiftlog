@@ -41,12 +41,13 @@ class SubmitShiftActivity : BaseActivity() {
     private var isTimerRunning = false
     private var hourlyWage: Double = 0.0  // This will store the user's hourly wage
 
+    private val sharedPrefs by lazy { getSharedPreferences("ShiftPrefs", MODE_PRIVATE) }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_submit_shift)
 
         setupToolbarAndDrawer(R.id.toolbar, R.id.drawer_layout, R.id.nav_view)
-
 
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
@@ -60,12 +61,14 @@ class SubmitShiftActivity : BaseActivity() {
         submitShiftButton = findViewById(R.id.submitShiftButton)
         timerTextView = findViewById(R.id.timerTextView)
 
-
         // Set initial date to today
         updateDisplayedDate()
 
         // Fetch the user's hourly wage from Firestore
         fetchHourlyWage()
+
+        // Restore timer state
+        restoreTimerState()
 
         // Handle previous day button click
         previousDayButton.setOnClickListener {
@@ -87,6 +90,7 @@ class SubmitShiftActivity : BaseActivity() {
                 startTimeInput.setText(getFormattedTime(startTime))
                 isShiftStarted = true
                 startTimer()
+                saveTimerState()
                 Toast.makeText(this, "Shift started. Press again to stop.", Toast.LENGTH_SHORT).show()
             } else {
                 // Stop the shift and timer
@@ -94,6 +98,7 @@ class SubmitShiftActivity : BaseActivity() {
                 endTimeInput.setText(getFormattedTime(endTime))
                 isShiftStarted = false
                 stopTimer()
+                saveTimerState()
                 Toast.makeText(this, "Shift ended. Now, press Submit to save.", Toast.LENGTH_SHORT).show()
             }
         }
@@ -110,6 +115,7 @@ class SubmitShiftActivity : BaseActivity() {
 
             val selectedDateString = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(currentDate.time)
             saveShiftDataToRealtimeDatabase(selectedDateString, startTimeText, endTimeText)
+            clearTimerState() // Clear the timer state after saving the shift
         }
     }
 
@@ -142,7 +148,6 @@ class SubmitShiftActivity : BaseActivity() {
 
     private fun startTimer() {
         isTimerRunning = true
-        secondsElapsed = 0
         handler.post(object : Runnable {
             override fun run() {
                 if (isTimerRunning) {
@@ -204,5 +209,44 @@ class SubmitShiftActivity : BaseActivity() {
 
     private fun calculateSalary(durationHours: Double, hourlyWage: Double): Double {
         return durationHours * hourlyWage
+    }
+
+    // Save the current state of the timer and shift
+    private fun saveTimerState() {
+        val editor = sharedPrefs.edit()
+        editor.putBoolean("isShiftStarted", isShiftStarted)
+        editor.putLong("startTime", startTime)
+        editor.putLong("endTime", endTime)
+        editor.putInt("secondsElapsed", secondsElapsed)
+        editor.putBoolean("isTimerRunning", isTimerRunning)
+        editor.apply()
+    }
+
+    // Restore the saved state of the timer and shift
+    private fun restoreTimerState() {
+        isShiftStarted = sharedPrefs.getBoolean("isShiftStarted", false)
+        startTime = sharedPrefs.getLong("startTime", 0L)
+        endTime = sharedPrefs.getLong("endTime", 0L)
+        secondsElapsed = sharedPrefs.getInt("secondsElapsed", 0)
+        isTimerRunning = sharedPrefs.getBoolean("isTimerRunning", false)
+
+        if (isTimerRunning) {
+            startTimer()
+        }
+
+        if (isShiftStarted) {
+            startTimeInput.setText(getFormattedTime(startTime))
+        }
+
+        if (endTime != 0L) {
+            endTimeInput.setText(getFormattedTime(endTime))
+        }
+    }
+
+    // Clear the saved state of the timer and shift
+    private fun clearTimerState() {
+        val editor = sharedPrefs.edit()
+        editor.clear()
+        editor.apply()
     }
 }

@@ -35,6 +35,19 @@
     <string name="the_user">The User</string>
     <string name="hourly_wage_0_00">Hourly Wage: $0.00</string>
     <string name="full_name">Full Name:</string>
+    <string name="other_deductions">Other Deductions:</string>
+    <string name="other_deductions_amount">Other deductions amount</string>
+    <string name="net_income1">Net Income:</string>
+    <string name="calculate_net_income">Calculate Net Income</string>
+    <string name="export_to_pdf">Export to PDF</string>
+    <string name="export_data_to_pdf_format">Export data to PDF format</string>
+    <string name="export_to_excel">Export to Excel</string>
+    <string name="export_data_to_excel_format">Export data to Excel format</string>
+    <string name="pension_amount">Pension amount</string>
+    <string name="tax_amount">Tax amount</string>
+    <string name="enter_bonuses_amount">Enter bonuses amount</string>
+    <string name="enter_deductions_amount">Enter deductions amount</string>
+    <string name="monthly_salary1">Monthly Salary</string>
 
 
 </resources>
