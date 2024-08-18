@@ -1,5 +1,6 @@
 package com.example.shiftlog
 
+import BaseActivity
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
@@ -16,7 +17,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
 
-class SubmitShiftActivity : AppCompatActivity() {
+class SubmitShiftActivity : BaseActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var firestore: FirebaseFirestore
@@ -44,6 +45,9 @@ class SubmitShiftActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_submit_shift)
 
+        setupToolbarAndDrawer(R.id.toolbar, R.id.drawer_layout, R.id.nav_view)
+
+
         auth = FirebaseAuth.getInstance()
         firestore = FirebaseFirestore.getInstance()
 
@@ -55,6 +59,7 @@ class SubmitShiftActivity : AppCompatActivity() {
         endTimeInput = findViewById(R.id.endTimeInput)
         submitShiftButton = findViewById(R.id.submitShiftButton)
         timerTextView = findViewById(R.id.timerTextView)
+
 
         // Set initial date to today
         updateDisplayedDate()

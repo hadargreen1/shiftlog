@@ -1,4 +1,4 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="@color/colorAccent" /> <!-- Change to your desired color -->
+    <solid android:color="@color/indigo_500" /> <!-- Change to your desired color -->
     <corners android:radius="75dp" /> <!-- Half of the ImageButton size to make it a circle -->
 </shape>

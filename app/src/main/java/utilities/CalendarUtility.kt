@@ -1,23 +1,27 @@
 package utilities
 
+import android.app.AlertDialog
+import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-import androidx.fragment.app.Fragment
-import com.google.firebase.auth.FirebaseAuth
-import com.prolificinteractive.materialcalendarview.MaterialCalendarView
-import com.prolificinteractive.materialcalendarview.CalendarDay
-import java.text.SimpleDateFormat
-import java.util.*
 import android.widget.TextView
+import android.widget.Toast
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import com.example.shiftlog.R
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.GenericTypeIndicator
-import kotlin.text.*
+import com.prolificinteractive.materialcalendarview.CalendarDay
+import com.prolificinteractive.materialcalendarview.DayViewDecorator
+import com.prolificinteractive.materialcalendarview.DayViewFacade
+import com.prolificinteractive.materialcalendarview.MaterialCalendarView
+import java.text.SimpleDateFormat
+import java.util.*
 
 class CalendarUtility : Fragment() {
 
@@ -37,6 +41,9 @@ class CalendarUtility : Fragment() {
                 SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selectedDate)
             loadShiftDataForDate(formattedDate)
         }
+
+        // Load worked days from the database and apply decorators
+        loadWorkedDaysFromDatabase()
 
         return view
     }
@@ -133,5 +140,50 @@ class CalendarUtility : Fragment() {
             .show()
     }
 
+    private fun loadWorkedDaysFromDatabase() {
+        val user = auth.currentUser?.uid
+        if (user != null) {
+            val db = FirebaseDatabase.getInstance("https://shiftlog-6a430-default-rtdb.europe-west1.firebasedatabase.app").reference
+            val userShiftsRef = db.child("users").child(user).child("shifts")
 
+            userShiftsRef.get().addOnSuccessListener { dataSnapshot ->
+                val workedDays = HashSet<CalendarDay>()
+
+                for (dateSnapshot in dataSnapshot.children) {
+                    val dateStr = dateSnapshot.key
+                    dateStr?.let {
+                        // Convert the date string (yyyy-MM-dd) to CalendarDay
+                        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        val date = sdf.parse(it)
+                        date?.let { parsedDate ->
+                            val calendar = Calendar.getInstance()
+                            calendar.time = parsedDate
+                            val workedDay = CalendarDay.from(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH))
+                            workedDays.add(workedDay)
+                        }
+                    }
+                }
+
+                // Apply the decorator to highlight the worked days
+                val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.round_background)
+                calendarView.addDecorator(WorkedDaysDecorator(workedDays, drawable))
+            }.addOnFailureListener {
+                Toast.makeText(requireContext(), "Error loading worked days: ${it.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    // Decorator class to highlight the worked days with a round background
+    class WorkedDaysDecorator(private val workedDays: HashSet<CalendarDay>, private val drawable: Drawable?) : DayViewDecorator {
+
+        override fun shouldDecorate(day: CalendarDay): Boolean {
+            return workedDays.contains(day)
+        }
+
+        override fun decorate(view: DayViewFacade) {
+            drawable?.let {
+                view.setBackgroundDrawable(it) // Set the round background
+            }
+        }
+    }
 }

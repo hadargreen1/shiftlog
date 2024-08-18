@@ -19,14 +19,7 @@
             android:layout_below="@id/toolbar"
             android:layout_marginTop="50dp"
             android:layout_marginBottom="100dp">
-
-            <!-- MaterialCalendarView inside FrameLayout -->
-            <com.prolificinteractive.materialcalendarview.MaterialCalendarView
-                android:id="@+id/calendarView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:mcv_showOtherDates="all"
-                app:mcv_showWeekDays="true"/>
+            <!-- This is where the CalendarUtility fragment will be loaded -->
         </FrameLayout>
 
         <include
