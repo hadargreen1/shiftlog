@@ -6,17 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-
-
-    <com.prolificinteractive.materialcalendarview.MaterialCalendarView
-        android:id="@+id/calendarView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:mcv_showOtherDates="all"
-        app:mcv_showWeekDays="true"
-        app:mcv_headerTextAppearance="?android:attr/textAppearanceLarge" />
-
-
     <!-- CoordinatorLayout to manage Toolbar and content -->
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
@@ -28,12 +17,23 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@id/toolbar"
-            android:layout_marginBottom="100dp"/> <!-- Adjust margin as needed -->
+            android:layout_marginTop="50dp"
+            android:layout_marginBottom="100dp">
+
+            <!-- MaterialCalendarView inside FrameLayout -->
+            <com.prolificinteractive.materialcalendarview.MaterialCalendarView
+                android:id="@+id/calendarView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:mcv_showOtherDates="all"
+                app:mcv_showWeekDays="true"/>
+        </FrameLayout>
 
         <include
             layout="@layout/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+
         <!-- Days Worked and Salary Gained Info -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -63,8 +63,8 @@
                 android:textColor="@android:color/black" />
         </LinearLayout>
 
-
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="match_parent"
@@ -72,4 +72,5 @@
         android:layout_gravity="start"
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/drawer_menu" />
+
 </androidx.drawerlayout.widget.DrawerLayout>

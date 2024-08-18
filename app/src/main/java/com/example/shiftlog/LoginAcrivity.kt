@@ -26,6 +26,10 @@ class LoginActivity : AppCompatActivity() {
         loginButton = findViewById(R.id.loginButton)
 
         loginButton.setOnClickListener {
+            // Clear focus from input fields before processing
+            emailInput.clearFocus()
+            passwordInput.clearFocus()
+
             val email = emailInput.text.toString().trim()
             val password = passwordInput.text.toString().trim()
 

@@ -22,7 +22,9 @@ import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.text.*
+import kotlin.text.*import com.itextpdf.layout.element.Cell
+import com.itextpdf.layout.element.Table
+
 
 class PayManagementActivity : AppCompatActivity() {
 
@@ -192,22 +194,75 @@ class PayManagementActivity : AppCompatActivity() {
         }
     }
 
-    @SuppressLint("DefaultLocale")
     private fun createPdf() {
-        val fileName = "UserData.pdf"
+        val userId = auth.currentUser?.uid ?: return
+
+        firestore.collection("users").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (document != null) {
+                    val userFullName = document.getString("fullName") ?: "Unknown Name"
+                    val userEmail = document.getString("email") ?: "Unknown Email"
+                    generatePdf(userFullName, userEmail)
+                } else {
+                    Toast.makeText(this, "User data not found", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .addOnFailureListener { exception ->
+                Toast.makeText(this, "Error fetching user data: ${exception.message}", Toast.LENGTH_LONG).show()
+            }
+    }
+
+    @SuppressLint("DefaultLocale")
+    private fun generatePdf(userFullName: String, userEmail: String) {
+        val month = monthPickerInput.text.toString()
+
+        val fileName = "UserData_${month}.pdf"
         val file = File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), fileName)
 
         try {
             val writer = PdfWriter(file)
             val pdfDoc = PdfDocument(writer)
             val document = Document(pdfDoc)
-            document.add(Paragraph("Monthly Salary: ${String.format("%.3f", monthlySalaryInput.text.toString().toDouble())}"))
-            document.add(Paragraph("Bonuses: ${String.format("%.3f", bonusesInput.text.toString().toDouble())}"))
-            document.add(Paragraph("Deductions: ${String.format("%.3f", deductionsInput.text.toString().toDouble())}"))
-            document.add(Paragraph("Taxes: ${String.format("%.3f", taxInput.text.toString().toDouble())}"))
-            document.add(Paragraph("Pension: ${String.format("%.3f", pensionInput.text.toString().toDouble())}"))
-            document.add(Paragraph("Other Deductions: ${String.format("%.3f", otherDeductionsInput.text.toString().toDouble())}"))
-            document.add(Paragraph("Net Income: ${String.format("%.3f", netIncomeTextView.text.toString().toDouble())}"))
+
+            // Header Section
+            document.add(Paragraph("Pay Stub for $month").setBold())
+            document.add(Paragraph("Name: $userFullName"))
+            document.add(Paragraph("Email: $userEmail"))
+            document.add(Paragraph("Date Generated: ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())}"))
+            document.add(Paragraph("\n"))
+
+            // Create a table with 2 columns
+            val table = Table(floatArrayOf(3f, 3f)).useAllAvailableWidth()
+
+            // Add table headers
+            table.addHeaderCell(Cell().add(Paragraph("Description").setBold()))
+            table.addHeaderCell(Cell().add(Paragraph("Amount").setBold()))
+
+            // Add table rows with payment details
+            table.addCell("Monthly Salary")
+            table.addCell(String.format("%.3f", monthlySalaryInput.text.toString().toDouble()))
+
+            table.addCell("Bonuses")
+            table.addCell(String.format("%.3f", bonusesInput.text.toString().toDouble()))
+
+            table.addCell("Deductions")
+            table.addCell(String.format("%.3f", deductionsInput.text.toString().toDouble()))
+
+            table.addCell("Taxes")
+            table.addCell(String.format("%.3f", taxInput.text.toString().toDouble()))
+
+            table.addCell("Pension")
+            table.addCell(String.format("%.3f", pensionInput.text.toString().toDouble()))
+
+            table.addCell("Other Deductions")
+            table.addCell(String.format("%.3f", otherDeductionsInput.text.toString().toDouble()))
+
+            table.addCell(Cell().add(Paragraph("Net Income").setBold()))
+            table.addCell(Cell().add(Paragraph(String.format("%.3f", netIncomeTextView.text.toString().toDouble())).setBold()))
+
+            // Add the table to the document
+            document.add(table)
+
             document.close()
 
             shareFile(file)
@@ -216,6 +271,7 @@ class PayManagementActivity : AppCompatActivity() {
                 .show()
         }
     }
+
 
     @SuppressLint("DefaultLocale")
     private fun createExcel() {
