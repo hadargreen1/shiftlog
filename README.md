@@ -1,6 +1,3 @@
-Based on the files you've provided, I'll create a README.md file for your project. The README will include an overview of the app, key features, and explanations of important components.
-
----
 
 # ShiftLog
 
