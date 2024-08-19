@@ -1,37 +1,44 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:gravity="center">
 
     <!-- Email input field -->
     <EditText
         android:id="@+id/emailInput"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:hint="@string/Email"
         android:importantForAutofill="no"
         android:inputType="textEmailAddress"
-        android:padding="12dp"
-        android:minHeight="48dp" />
+        android:padding="16dp"
+        android:background="@drawable/input_field_background"
+        android:layout_marginBottom="12dp"/>
 
     <!-- Password input field -->
     <EditText
         android:id="@+id/passwordInput"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:hint="@string/password"
         android:inputType="textPassword"
-        android:layout_below="@id/emailInput"
-        android:layout_marginTop="16dp"
-        android:padding="12dp"
-        android:minHeight="48dp" />
+        android:padding="16dp"
+        android:background="@drawable/input_field_background"
+    android:layout_below="@id/emailInput"
+    android:layout_marginTop="12dp"
+    android:layout_marginBottom="24dp"/>
 
     <!-- Login button -->
     <Button
         android:id="@+id/loginButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:text="@string/login"
+        android:textColor="@android:color/white"
+        android:background="?attr/colorPrimary"
+        android:elevation="2dp"
         android:layout_below="@id/passwordInput"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="24dp"/>
+
 </RelativeLayout>

@@ -10,7 +10,6 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.firestore.FirebaseFirestore
@@ -35,6 +34,8 @@ class SubmitShiftActivity : BaseActivity() {
     private var isShiftStarted: Boolean = false
     private var startTime: Long = 0
     private var endTime: Long = 0
+    private var totalElapsedTime: Long = 0  // Store total elapsed time
+    private var isShiftPaused: Boolean = false  // Track if the shift is paused
 
     private val handler = Handler(Looper.getMainLooper())
     private var secondsElapsed = 0
@@ -67,6 +68,9 @@ class SubmitShiftActivity : BaseActivity() {
         // Fetch the user's hourly wage from Firestore
         fetchHourlyWage()
 
+        // Clear any previous input when the activity is launched
+        clearInputFields()
+
         // Restore timer state
         restoreTimerState()
 
@@ -88,6 +92,7 @@ class SubmitShiftActivity : BaseActivity() {
                 // Start the shift and timer
                 startTime = System.currentTimeMillis()
                 startTimeInput.setText(getFormattedTime(startTime))
+                endTimeInput.text.clear()  // Clear end time when the shift starts
                 isShiftStarted = true
                 startTimer()
                 saveTimerState()
@@ -187,9 +192,7 @@ class SubmitShiftActivity : BaseActivity() {
             db.child("users").child(user).child("shifts").child(date).push().setValue(shiftData)
                 .addOnSuccessListener {
                     Toast.makeText(this, "Shift data saved successfully.", Toast.LENGTH_SHORT).show()
-                    // Clear input fields and reset the timer
-                    startTimeInput.text.clear()
-                    endTimeInput.text.clear()
+                    clearInputFields()
                     timerTextView.text = "00:00:00"
                 }
                 .addOnFailureListener {
@@ -238,8 +241,10 @@ class SubmitShiftActivity : BaseActivity() {
             startTimeInput.setText(getFormattedTime(startTime))
         }
 
-        if (endTime != 0L) {
+        if (endTime != 0L && !isShiftStarted) {  // Only set end time if the shift is not ongoing
             endTimeInput.setText(getFormattedTime(endTime))
+        } else {
+            endTimeInput.text.clear()
         }
     }
 
@@ -248,5 +253,11 @@ class SubmitShiftActivity : BaseActivity() {
         val editor = sharedPrefs.edit()
         editor.clear()
         editor.apply()
+    }
+
+    // Clear the input fields for start and end times
+    private fun clearInputFields() {
+        startTimeInput.text.clear()
+        endTimeInput.text.clear()
     }
 }

@@ -57,7 +57,7 @@ class RegisterActivity : AppCompatActivity() {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    // If registration is successful, save additional user data
+                    // If registration is successful, save user data
                     saveUserData(fullName, email, dob, password, hourlyWage)
 
                     // Show success message and navigate to MainActivity
@@ -77,33 +77,41 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun saveUserData(fullName: String, email: String, dob: String, password: String, hourlyWage: Double) {
         val user = auth.currentUser?.uid
-        val db = Firebase.firestore
+        val firestoreDb = Firebase.firestore
+        val realtimeDb = FirebaseDatabase.getInstance("https://shiftlog-6a430-default-rtdb.europe-west1.firebasedatabase.app").reference
 
         if (user != null) {
-            // Create a map for the user data
-            val userData = HashMap<String, Any>()
-            userData["fullName"] = fullName
-            userData["email"] = email
-            userData["dob"] = dob
-            userData["password"] = password
-            userData["hourlyWage"] = hourlyWage // Save hourly wage as Double
+            // Create a map for the Firestore user data
+            val firestoreUserData = hashMapOf(
+                "fullName" to fullName,
+                "email" to email,
+                "dob" to dob,
+                "password" to password
+            )
 
-            db.collection("users").document(user).set(userData)
+            // Save other user data in Firestore
+            firestoreDb.collection("users").document(user).set(firestoreUserData)
                 .addOnSuccessListener {
-                    // Clear input fields after successful save
-                    fullNameInput.text?.clear()
-                    passwordInput.text?.clear()
-                    dobInput.text?.clear()
-                    emailInput.text?.clear()
-                    hourlyWageInput.text?.clear()
-                    Toast.makeText(this, "User data saved successfully.", Toast.LENGTH_SHORT).show()
+                    // Save the hourly wage in Realtime Database
+                    saveHourlyWageToRealtimeDatabase(user, hourlyWage)
                 }
                 .addOnFailureListener { e ->
-                    // Handle any errors in saving user data
-                    Toast.makeText(this, "Failed to save user data: ${e.message}", Toast.LENGTH_LONG).show()
+                    // Handle any errors in saving user data to Firestore
+                    Toast.makeText(this, "Failed to save user data to Firestore: ${e.message}", Toast.LENGTH_LONG).show()
                 }
         } else {
             Toast.makeText(this, "User is not authenticated.", Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun saveHourlyWageToRealtimeDatabase(userId: String, hourlyWage: Double) {
+        val realtimeDb = FirebaseDatabase.getInstance("https://shiftlog-6a430-default-rtdb.europe-west1.firebasedatabase.app").reference
+        realtimeDb.child("users").child(userId).child("hourlyWage").setValue(hourlyWage)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Hourly wage saved successfully.", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Failed to save hourly wage to Realtime Database: ${e.message}", Toast.LENGTH_LONG).show()
+            }
     }
 }

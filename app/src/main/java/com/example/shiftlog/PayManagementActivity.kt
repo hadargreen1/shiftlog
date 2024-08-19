@@ -40,8 +40,8 @@ class PayManagementActivity : BaseActivity() {
     private lateinit var exportExcelButton: Button
 
     private lateinit var auth: FirebaseAuth
-    private lateinit var firestore: FirebaseFirestore
     private lateinit var database: FirebaseDatabase
+    private var hourlyWage: Double = 0.0 // To store the hourly wage
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,15 +50,15 @@ class PayManagementActivity : BaseActivity() {
         // Setup toolbar and drawer
         setupToolbarAndDrawer(R.id.toolbar, R.id.drawer_layout, R.id.nav_view)
 
-
-
         // Initialize Firebase services
         auth = FirebaseAuth.getInstance()
-        firestore = FirebaseFirestore.getInstance()
         database = FirebaseDatabase.getInstance("https://shiftlog-6a430-default-rtdb.europe-west1.firebasedatabase.app")
 
         // Link UI elements
         initializeUI()
+
+        // Fetch the hourly wage from Realtime Database
+        fetchHourlyWage()
 
         // Set up month picker
         monthPickerInput.setOnClickListener {
@@ -91,6 +91,23 @@ class PayManagementActivity : BaseActivity() {
         exportExcelButton = findViewById(R.id.exportExcelButton)
     }
 
+    private fun fetchHourlyWage() {
+        val user = auth.currentUser?.uid
+        if (user != null) {
+            val userRef = database.reference.child("users").child(user).child("hourlyWage")
+            userRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    hourlyWage = dataSnapshot.getValue(Double::class.java) ?: 0.0
+                    Toast.makeText(this@PayManagementActivity, "Hourly Wage: $$hourlyWage", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    showError("Error fetching hourly wage")
+                }
+            })
+        }
+    }
+
     private fun showMonthPickerDialog() {
         val calendar = Calendar.getInstance()
         val year = calendar.get(Calendar.YEAR)
@@ -119,8 +136,9 @@ class PayManagementActivity : BaseActivity() {
                     for (dateSnapshot in dataSnapshot.children) {
                         if (dateSnapshot.key?.startsWith(month) == true) {
                             for (shiftSnapshot in dateSnapshot.children) {
-                                val salary = shiftSnapshot.child("salary").getValue(Double::class.java) ?: 0.0
-                                totalSalary += salary
+                                val shiftDuration = shiftSnapshot.child("duration").getValue(Double::class.java) ?: 0.0
+                                val shiftSalary = shiftDuration * hourlyWage
+                                totalSalary += shiftSalary
                             }
                         }
                     }
@@ -194,24 +212,49 @@ class PayManagementActivity : BaseActivity() {
 
     private fun createPdf() {
         val userId = auth.currentUser?.uid ?: return
+        val userFirestoreRef = FirebaseFirestore.getInstance().collection("users").document(userId)
 
-        firestore.collection("users").document(userId).get()
-            .addOnSuccessListener { document ->
-                if (document != null) {
-                    val userFullName = document.getString("fullName") ?: "Unknown Name"
-                    val userEmail = document.getString("email") ?: "Unknown Email"
-                    generatePdf(userFullName, userEmail)
-                } else {
-                    showError("User data not found")
-                }
+        // Fetch user data from Firestore
+        userFirestoreRef.get().addOnSuccessListener { document ->
+            if (document != null && document.exists()) {
+                val userFullName = document.getString("fullName") ?: "Unknown Name"
+                val userEmail = document.getString("email") ?: "Unknown Email"
+                val hourlyWage = document.getDouble("hourlyWage") ?: 0.0
+
+                // Fetch total worked hours for the month from Realtime Database
+                val month = monthPickerInput.text.toString()
+                val dbRef = database.reference.child("users").child(userId).child("shifts")
+                dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        var totalWorkedHours = 0.0
+                        for (dateSnapshot in dataSnapshot.children) {
+                            if (dateSnapshot.key?.startsWith(month) == true) {
+                                for (shiftSnapshot in dateSnapshot.children) {
+                                    val duration = shiftSnapshot.child("duration").getValue(Double::class.java) ?: 0.0
+                                    totalWorkedHours += duration
+                                }
+                            }
+                        }
+                        generatePdf(userFullName, userEmail, hourlyWage, totalWorkedHours)
+                    }
+
+                    override fun onCancelled(databaseError: DatabaseError) {
+                        showError("Error fetching shift data: ${databaseError.message}")
+                    }
+                })
+            } else {
+                showError("User data not found")
             }
-            .addOnFailureListener { exception ->
-                showError("Error fetching user data: ${exception.message}")
-            }
+        }.addOnFailureListener { exception ->
+            showError("Error fetching user data: ${exception.message}")
+        }
     }
 
+
+
+
     @SuppressLint("DefaultLocale")
-    private fun generatePdf(userFullName: String, userEmail: String) {
+    private fun generatePdf(userFullName: String, userEmail: String, hourlyWage: Double, totalWorkedHours: Double) {
         val month = monthPickerInput.text.toString()
         val fileName = "UserData_${month}.pdf"
         val file = File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS), fileName)
@@ -225,6 +268,8 @@ class PayManagementActivity : BaseActivity() {
             document.add(Paragraph("Pay Stub for $month").setBold())
             document.add(Paragraph("Name: $userFullName"))
             document.add(Paragraph("Email: $userEmail"))
+            document.add(Paragraph("Hourly Wage: $${String.format("%.2f", hourlyWage)}"))
+            document.add(Paragraph("Total Worked Hours: ${String.format("%.2f", totalWorkedHours)}"))
             document.add(Paragraph("Date Generated: ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())}"))
             document.add(Paragraph("\n"))
 
